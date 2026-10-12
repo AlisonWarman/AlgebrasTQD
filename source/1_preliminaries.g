@@ -1,8 +1,9 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ## source/1_preliminaries.g           AlgebrasTQD
 ##
-## Preliminary helpers and labels for group elements.
+## Preliminary helpers and labels for group elements
 ##
 ## Functions in this file (the first line of each header):
 ## - GroupData: the mutable generator and element-label record attached to a group
@@ -96,7 +97,7 @@ MakeGroupLabels:=function(inp)
 	od;
 	known:=known2;
 	labG:=labG2;
-	#element -> its position in known, so the search below never calls Position on a list that grows to the whole group.
+	#element -> its position in known, so the search below never calls Position on a list that grows to the whole group
 	knownPos:=NewDictionary(One(G),true,G);
 	for i in [1..Length(known)] do AddDictionary(knownPos,known[i],i); od;
 	ElG:=Elements(G);
@@ -267,7 +268,7 @@ MakeGroupLabels:=function(inp)
 	fi;
 	if Length(Set(labG))<>Length(labG) then
 		ErrorNoReturn("MakeGroupLabels: two elements got the same label ",First(labG,l->Number(labG,m->m=l)>1),
-			"; choose generator labels whose products cannot be confused (not \"a\" and \"ab\")");
+			". Choose generator labels whose products cannot be confused (not \"a\" and \"ab\")");
 	fi;
 	if not IsEqualSet(known,ElG) then
 		ErrorNoReturn("MakeGroupLabels: internal error (labelled elements are not the elements of G)");
@@ -296,7 +297,7 @@ if not IsBound(MakeGroupCache) then
 	MakeGroupCache:=[];
 fi;
 
-#AttachGroupLabels: stores labelled generators with a group, for all labelling; GAP keeps its own generators (the pc generators of a SmallGroup) for the calculations, so the group itself is not changed
+#AttachGroupLabels: stores labelled generators with a group, for all labelling, GAP keeps its own generators (the pc generators of a SmallGroup) for the calculations, so the group itself is not changed
 #in: (G,gens,labels[,meaning]) with gens elements generating G, labels their labels (strings), meaning optional lines saying what they stand for
 #out: G, with GroupData(G).gens = gens and GroupData(G).labels = labels (replacing any stored before)
 AttachGroupLabels:=function(arg)
@@ -345,7 +346,7 @@ MakeGroup:=function(arg)
 	productOf:=function(fs)
 		local letters,nD,nQ,iC,iD,iQ,F,gens,labs,meaning,f,c,n,X,x,y,suf,embs,D,toPerm,iso,g;
 		letters:="abcdefghklmnopqtuvwxyz";
-		#S2, A3 are cyclic and S3 dihedral; A1, A2, S1, C1 trivial
+		#S2, A3 are cyclic and S3 dihedral, A1, A2, S1, C1 trivial
 		fs:=List(fs,function(f)
 			if f[1]='S' and f[2]=3 then return ['D',6];
 			elif (f[1]='S' and f[2]=2) or (f[1]='A' and f[2]=3) then return ['C',f[2]];
@@ -507,7 +508,7 @@ MakeGroup:=function(arg)
 		return labelled(G,s);
 	fi;
 	#any other name: compared with StructureDescription, the factors of every direct product in any order
-	#canon: a name without spaces with the factors of every direct product sorted; a level with a ':' or '.' outside brackets is not reordered
+	#canon: a name without spaces with the factors of every direct product sorted, a level with a ':' or '.' outside brackets is not reordered
 	canon:=function(s)
 		local parts,cur,mixed,depth,i,j;
 		parts:=[];
@@ -560,7 +561,7 @@ MakeGroup:=function(arg)
 end;
 
 #GroupElement: the element of a group given by a word in its generator labels
-#in: (G,word) with word a string in the labels of the generators of G (see MakeGroupLabels([G])[3]), "1", products (written as MakeGroupLabels writes them, without *, or with *), powers ^n (n may be negative) and brackets, e.g. "cab", "r^2s", "(rs)^-1", "c*a*b"; spaces ignored
+#in: (G,word) with word a string in the labels of the generators of G (see MakeGroupLabels([G])[3]), "1", products (written as MakeGroupLabels writes them, without *, or with *), powers ^n (n may be negative) and brackets, e.g. "cab", "r^2s", "(rs)^-1", "c*a*b", spaces ignored
 #out: the element of G labelled by word
 GroupElement:=function(G,word)
 	local gl,gens,labs,order,w,i,x,fail_at,expr,term,atom,int;
@@ -573,7 +574,7 @@ GroupElement:=function(G,word)
 	w:=Filtered(word,c->c<>' ');
 	i:=1;
 	fail_at:=function()
-		ErrorNoReturn("GroupElement: cannot read \"",word,"\" at \"",w{[i..Length(w)]},"\"; the generators of G are ",labs);
+		ErrorNoReturn("GroupElement: cannot read \"",word,"\" at \"",w{[i..Length(w)]},"\". The generators of G are ",labs);
 	end;
 	int:=function()
 		local j,sgn;
@@ -643,8 +644,8 @@ GroupLabel:=function(G,g)
 end;
 
 #RelabelGroup: new labelled generators for a group, given as words in its current labels
-#in: (G,"gap") for GAP's generators and labels, or (G,labels,words) with labels the new generator labels, e.g. ["c","a","b"] (letters and digits, starting with a letter; no label another label followed by letters), and words the generators, each a word in the current labels of G (see GroupElement) or an element of G, e.g. ["sr","s","sr^2"]; when two labels of an element are equally short, the one following the order of labels is used, so list first the generator to be written on the left
-#out: G, with the new generators and labels stored in GroupData(G) (used for all labelling; GAP keeps its own generators for the calculations)
+#in: (G,"gap") for GAP's generators and labels, or (G,labels,words) with labels the new generator labels, e.g. ["c","a","b"] (letters and digits, starting with a letter, no label another label followed by letters), and words the generators, each a word in the current labels of G (see GroupElement) or an element of G, e.g. ["sr","s","sr^2"], when two labels of an element are equally short, the one following the order of labels is used, so list first the generator to be written on the left
+#out: G, with the new generators and labels stored in GroupData(G) (used for all labelling, GAP keeps its own generators for the calculations)
 RelabelGroup:=function(arg)
 	local G,labels,words,gens;
 	G:=arg[1];
@@ -685,7 +686,7 @@ end;
 
 #DisplayGroupLabels: a group by generators and relations
 #in: (inp[,pcgs]) with inp a group G, or [G,[elements,labels]] (labels strings, optionally [elements,labels,gens] as returned by MakeGroupLabels), and pcgs a pcgs of G (default Pcgs(G))
-#out: a string printing G by generators and relations; for a pc-group the relations are those of pcgs written in the labels (a power relation whose two sides are the same label is not printed); for a permutation or fp-group the labels are not used
+#out: a string printing G by generators and relations, for a pc-group the relations are those of pcgs written in the labels (a power relation whose two sides are the same label is not printed), for a permutation or fp-group the labels are not used
 DisplayGroupLabels:=function(arg)
 	local inp,G,Gstr,El,lab,gl,isAtom,parts,pcgs,n,F,gens,rels,i,pis,exp,t,h,commPower,j,trivialCommutators;
 	inp:=arg[1];
@@ -816,7 +817,7 @@ end;
 
 #ShowGroup: prints a group with its labelled generators, its relations and the labels of all its elements
 #in: G a group (labels from MakeGroup or RelabelGroup, otherwise GAP's)
-#out: none; prints the generators (and what they stand for), the relations as DisplayGroupLabels does, for a solvable group in a pcgs made of the labelled generators and their powers when there is one (D8 with r,s: r, r^2, s; a solvable permutation group through an isomorphic pc-group), and every element with its label
+#out: none, prints the generators (and what they stand for), the relations as DisplayGroupLabels does, for a solvable group in a pcgs made of the labelled generators and their powers when there is one (D8 with r,s: r, r^2, s, a solvable permutation group through an isomorphic pc-group), and every element with its label
 ShowGroup:=function(G)
 	local gl,glH,Hp,iso,gens,cands,extra,g,p,m,pcseq,search,steps,pcgs,l,line,lab;
 	gl:=MakeGroupLabels([G]);
@@ -840,7 +841,7 @@ ShowGroup:=function(G)
 				m:=m^p;
 			od;
 		od;
-		#search: a pc sequence [s_1..s_n] of candidates, built from the end: every <s_i..s_n> is normal of prime index in <s_(i-1)..s_n>; the later candidates are tried last positions first, so that the order of the generators is kept; at most 20000 steps
+		#search: a pc sequence [s_1..s_n] of candidates, built from the end: every <s_i..s_n> is normal of prime index in <s_(i-1)..s_n>, the later candidates are tried last positions first, so that the order of the generators is kept, at most 20000 steps
 		steps:=0;
 		search:=function(seq,H)
 			local c,K,res;
@@ -963,7 +964,7 @@ end;
 #out: a rational vector x with every entry of A*x-b an integer, or fail if there is none
 SolveModZ:=function(A,b,D)
 	local n,Mv,Herm,Hermt,v,sol,x;
-	#HermiteNormalFormIntegerMat of [A | n*b], right-hand column reduced mod n, then SolutionMat: U[A|B]=[H|B'] with U unimodular, so A*x=b mod 1 iff H*y=B' mod n for y=n*x (y rational). The zero rows of H give B'_i=0 mod n and the other rows are solved over Q.
+	#HermiteNormalFormIntegerMat of [A | n*b], right-hand column reduced mod n, then SolutionMat: U[A|B]=[H|B'] with U unimodular, so A*x=b mod 1 iff H*y=B' mod n for y=n*x (y rational). The zero rows of H give B'_i=0 mod n and the other rows are solved over Q
 	n:=D;
 	#no unknowns: solvable iff b is already integral
 	if ForAll(A,IsEmpty) then
@@ -1010,7 +1011,7 @@ end;
 
 #Krl: iterated Kronecker product of a list of matrices
 #in: lin a nonempty list of matrices
-#out: their iterated Kronecker product, lin[1] (x) lin[2] (x) ...
+#out: their iterated Kronecker product, lin[1] (x) lin[2] (x) 
 Krl:=function(lin)
 	local l,M;
 	l:=lin;

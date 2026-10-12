@@ -1,8 +1,9 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ## source/2_anyons.g                  AlgebrasTQD
 ##
-## Anyon labels, display helpers, and fusion rules.
+## Anyon labels, display helpers, and fusion rules
 ##
 ## Functions in this file (the first line of each header):
 ## - ShowAlg: writes a multiplicity vector as a sum of labels
@@ -75,8 +76,8 @@ ShowChars:=function(a,ElG)
 end;
 
 #AbelianLabels: anyons of an abelian group in the magnetic/electric (m,e) labelling
-#in: an abelian group G, or rec(G:=G,[gen:=independent generators],[opA:="*" for labels conjugate to the characters]); without gen the labelled generators a, b, ... of G stored by MakeGroup are used (MakeGroup(G) is called if G has none), so that m1, m2, ... are their fluxes; they must be independent
-#out: [ElG,Elm,Ele,aG] with the elements of G, of its magnetic and electric copies, and aG the anyons [g,character dictionary,class,label]; a cyclic group has the flux m and the charge e, otherwise m1, m2, ... and e1, e2, ...
+#in: an abelian group G, or rec(G:=G,[gen:=independent generators],[opA:="*" for labels conjugate to the characters]), without gen the labelled generators a, b, ... of G stored by MakeGroup are used (MakeGroup(G) is called if G has none), so that m1, m2, ... are their fluxes, they must be independent
+#out: [ElG,Elm,Ele,aG] with the elements of G, of its magnetic and electric copies, and aG the anyons [g,character dictionary,class,label], a cyclic group has the flux m and the charge e, otherwise m1, m2, ... and e1, e2, 
 AbelianLabels:=function(inp)
 	local
 G,gen,opA,ords,names,copy,isomi,isoei,gem,gee,lm,le,ElG,Elm,Ele,g,gm,ge,k,chsM,dicts,dict,chs,e,l,Gch,hom,GG,pm,pe,em,ee,ElGG,aG,a,max,h,c,str,f1;
@@ -108,10 +109,10 @@ G,gen,opA,ords,names,copy,isomi,isoei,gem,gee,lm,le,ElG,Elm,Ele,g,gm,ge,k,chsM,d
 		if (IsEmpty(gen) and not IsTrivial(G)) or
 		   (not IsEmpty(gen) and not (G=Group(gen) and Product(List(gen,Order))=Size(G))) then
 			ErrorNoReturn("AbelianLabels: the labelled generators of G are not independent",
-				" (their orders must multiply to |G|), so m1, m2, ... cannot follow them; relabel G, e.g. MakeGroup(\"C4 x C2\")");
+				" (their orders must multiply to |G|), so m1, m2, ... cannot follow them. Relabel G, e.g. MakeGroup(\"C4 x C2\")");
 		fi;
 	fi;
-	#the magnetic and electric copies of G: the abelian group presented on m1, m2, ... (e1, e2, ...) with the orders of gen and commuting generators, written down directly (no coset enumeration), named m, e for one generator; isomi, isoei map them to G by evaluating words (m_k -> gen[k])
+	#the magnetic and electric copies of G: the abelian group presented on m1, m2, ... (e1, e2, ...) with the orders of gen and commuting generators, written down directly (no coset enumeration), named m, e for one generator, isomi, isoei map them to G by evaluating words (m_k -> gen[k])
 	ords:=List(gen,Order);
 	if Length(gen)=1 then
 		names:=[["m"],["e"]];
@@ -187,7 +188,7 @@ end;
 
 #Anyons: simple objects of the twisted Drinfeld double D^omega(G)
 #in: a group G, or rec(G:=G or [G,classes], om:=rec(a,N) a 3-cocycle, glG:=[elements,labels], gen:=independent generators of an abelian G (untwisted abelian path only, default the labelled generators of G), bos:=true for bosons only, opA:="data" for the modular data, opA:="*" for conjugate labels)
-#out: the list of anyons [representative,character dictionary,class,label], or rec(aG,S,T) when opA="data" (S, T indexed like aG); with opA="*" the label of every anyon is the conjugate of its character data (untwisted abelian groups: in label order; otherwise in the order without "*")
+#out: the list of anyons [representative,character dictionary,class,label], or rec(aG,S,T) when opA="data" (S, T indexed like aG), with opA="*" the label of every anyon is the conjugate of its character data (untwisted abelian groups: in label order, otherwise in the order without "*")
 Anyons:=function(inp)
 	local G,ElG,labG,labPos,ccin,omega,N,val,exp,trivialOmega,opA,gen,bos,g1,g2,g3,x,vacd,objs,simp,cc,data,aba,
 		gl,value,root,valueString,labelOf,separate,ce,Uce,Ugs,lab,aG,shortest;
@@ -219,7 +220,7 @@ Anyons:=function(inp)
 	else
 		ErrorNoReturn("Anyons: give a group or a record rec(G:=...)");
 	fi;
-	#the cocycle: val = gcd of its values and N, exp = N/val; the loop stops once val=1 and a nonzero value is seen
+	#the cocycle: val = gcd of its values and N, exp = N/val, the loop stops once val=1 and a nonzero value is seen
 	if IsRecord(inp) and IsBound(inp.om) then
 		N:=inp.om.N;
 		omega:=function(g1,g2,g3) return inp.om.a(g1,g2,g3); end;
@@ -254,7 +255,7 @@ Anyons:=function(inp)
 		return aG;
 	fi;
 
-	#--- untwisted abelian groups: the (m,e) labels of AbelianLabels, m1, m2, ... the fluxes of the labelled generators, and S, T by their closed formulas for a = (g,chi), b = (h,psi) (no simple objects of Gruen-Morrison needed): S_ab = conj(chi(h) psi(g))/|G|, T_aa = chi(g); with opA="*" the stored characters are already conjugated
+	#--- untwisted abelian groups: the (m,e) labels of AbelianLabels, m1, m2, ... the fluxes of the labelled generators, and S, T by their closed formulas for a = (g,chi), b = (h,psi) (no simple objects of Gruen-Morrison needed): S_ab = conj(chi(h) psi(g))/|G|, T_aa = chi(g), with opA="*" the stored characters are already conjugated
 	if IsAbelian(G) and trivialOmega and not bos then
 		if IsBound(gen) then aba:=AbelianLabels(rec(G:=G,opA:=opA,gen:=gen)); else aba:=AbelianLabels(rec(G:=G,opA:=opA)); fi;
 		aG:=aba[4];
@@ -265,7 +266,7 @@ Anyons:=function(inp)
 	fi;
 
 	#--- the simple objects (Gruen-Morrison), optionally only the bosons (chi(g)>0 rational), and the modular data
-	#Convention: GenerateSimpleObjects (source/00) labels the simple objects by theta_x-projective representations of C_G(x), theta_x the Gruen-Morrison 2-cocycle; GM call this category Z(Vec_G^{omega^{-1}}), TwinAlgebras.tex calls it Z(Vec_G^omega) and labels it by omega(.,.|x)^{-1}-projective representations, and omega(x,y|a)=1/theta_a(x,y) on C_G(a). Both labellings coincide, so the anyons below are those of Z(Vec_G^omega) in the paper's naming.
+	#Convention: GenerateSimpleObjects labels the simple objects by theta_x-projective representations of C_G(x), theta_x the Gruen-Morrison 2-cocycle, GM call this category Z(Vec_G^{omega^{-1}}), arXiv:2605.31602 calls it Z(Vec_G^omega) and labels it by omega(.,.|x)^{-1}-projective representations, and omega(x,y|a)=1/theta_a(x,y) on C_G(a). Both labellings coincide, so the anyons below are those of Z(Vec_G^omega) in the paper's naming
 	#shortest: the position in ElG of the element of a class with the shortest label (the first in ElG on ties). It gives the default classes (GAP's class order) and the centralizer elements of the labels below, so that the labels do not depend on the representatives GAP happens to choose (they change with earlier computations)
 	labPos:=NewDictionary(ElG[1],true,G);
 	for x in [1..Length(ElG)] do AddDictionary(labPos,ElG[x],x); od;
@@ -314,7 +315,7 @@ Anyons:=function(inp)
 		return Concatenation(" ",gl(k),"=",String(v));
 	end;
 	#labelOf: the label of the simple object simp[n], without the closing bracket: the flux class, chi(g), and the values on the class representatives of the centralizer that are not in the subgroup generated so far (a one-dimensional
-	#character: a root of unity or -1; otherwise a value other than chi(1) and 0)
+	#character: a root of unity or -1, otherwise a value other than chi(1) and 0)
 	labelOf:=function(n)
 		local g,ch,s,v,H,k;
 		g:=simp[n].representative;
@@ -336,7 +337,7 @@ Anyons:=function(inp)
 		od;
 		return s;
 	end;
-	#separate: makes equal labels distinct. First, for every set of anyons with the same label, each gets the values at the centralizer elements where its character differs from all the others (or, if there are none, from each of them); then, while two labels are still equal, every anyon of that set gets its value at the first element of the centralizer where the characters of the set are not all equal (two simple objects with the same flux have different characters, so this ends)
+	#separate: makes equal labels distinct. First, for every set of anyons with the same label, each gets the values at the centralizer elements where its character differs from all the others (or, if there are none, from each of them), then, while two labels are still equal, every anyon of that set gets its value at the first element of the centralizer where the characters of the set are not all equal (two simple objects with the same flux have different characters, so this ends)
 	separate:=function(lab)
 		local l,pos,Cg,chs,n,ch,post,diff,gs,once,s,k,i,kk;
 		for l in Set(lab) do
@@ -403,7 +404,7 @@ end;
 
 #AnyonLabelStrings: the anyon labels as strings, in the order of aG
 #in: aG a list of anyons as returned by Anyons (labels strings ([g],R), or [m,e] pairs on the abelian path)
-#out: the list of label strings: ([g],R) labels as they are, the vacuum ([1],1); an abelian label joins flux and charge without trivial parts, e.g. "m1e2", "m2", "e1^2" (m, e for a cyclic group, as named by AbelianLabels), the vacuum 1
+#out: the list of label strings: ([g],R) labels as they are, the vacuum ([1],1), an abelian label joins flux and charge without trivial parts, e.g. "m1e2", "m2", "e1^2" (m, e for a cyclic group, as named by AbelianLabels), the vacuum 1
 AnyonLabelStrings:=function(aG)
 	local lab;
 	lab:=List(aG,function(a)
@@ -438,7 +439,7 @@ ShowAnyons:=function(th)
 end;
 
 #CustomAnyonLabels: asks for a new label for each anyon, showing its index, label, dimension, spin, boson test and characters
-#in: (th[,opts]) with th a record from TQDTheory; opts optional bosons:=true (only the bosons), chars:=false (no characters), input:=list of answers (instead of the keyboard); Enter keeps a label, "q" keeps all remaining, a used label is refused
+#in: (th[,opts]) with th a record from TQDTheory, opts optional bosons:=true (only the bosons), chars:=false (no characters), input:=list of answers (instead of the keyboard), Enter keeps a label, "q" keeps all remaining, a used label is refused
 #out: the list of labels, indexed like th.aG (use th.labels:=CustomAnyonLabels(th))
 CustomAnyonLabels:=function(arg)
 	local th,opts,lab,n,a,g,spin,isbos,ans,stream,answers,next,El,stop;
@@ -468,7 +469,7 @@ CustomAnyonLabels:=function(arg)
 	for n in [1..Length(th.aG)] do
 		a:=th.aG[n];
 		g:=a[1];
-		#topological spin from the character at the flux; boson iff spin 1
+		#topological spin from the character at the flux, boson iff spin 1
 		spin:=LookupDictionary(a[2],g)/LookupDictionary(a[2],One(th.G));
 		isbos:=spin=1;
 		if stop or (IsBound(opts.bosons) and opts.bosons=true and not isbos) then continue; fi;
@@ -492,14 +493,23 @@ end;
 
 #Fusion: the fusion product a x b of two anyons, from S by the Verlinde formula (no fusion array is stored)
 #in: (th,a,b) with th a record from TQDTheory(G,v,rec(ST:=true)), a and b anyons given by their labels (th.labels) or indices
-#out: the decomposition of a x b as a string of labels, e.g. "1+([1],2 r=-1)+([r],1)"; N_ab^c = sum_x S_ax S_bx conj(S_cx)/S_0x
+#out: the decomposition of a x b as a string of labels, e.g. "1+([1],2 r=-1)+([r],1)", N_ab^c = sum_x S_ax S_bx conj(S_cx)/S_0x
 Fusion:=function(th,a,b)
-	local S,n,i,j,v,mult,pos;
+	local S,n,i,j,mult,pos,norm,scale;
 	if not (IsRecord(th) and IsBound(th.S) and IsBound(th.labels)) then
-		ErrorNoReturn("Fusion: the theory has no S matrix; build it with TQDTheory(G,v,rec(ST:=true))");
+		ErrorNoReturn("Fusion: the theory has no S matrix. Build it with TQDTheory(G,v,rec(ST:=true))");
 	fi;
 	S:=th.S;
 	n:=Length(S);
+	#The vacuum row has norm one for a normalized modular S matrix
+	norm:=Sum(S[1],z->z*ComplexConjugate(z));
+	if norm<>1 then
+		if not IsRat(norm) or norm<=0 then
+			ErrorNoReturn("Fusion: cannot normalize the S matrix vacuum row");
+		fi;
+		scale:=Sqrt(norm);
+		S:=List(S,row->List(row,z->z/scale));
+	fi;
 	pos:=function(x)
 		local k;
 		if IsPosInt(x) and x<=n then return x; fi;
@@ -509,9 +519,7 @@ Fusion:=function(th,a,b)
 	end;
 	i:=pos(a);
 	j:=pos(b);
-	#one row of the Verlinde formula: v_x = S_ix S_jx / S_0x, then N_ij^c = sum_x v_x conj(S_cx)
-	v:=List([1..n],x->S[i][x]*S[j][x]/S[1][x]);
-	mult:=List([1..n],c->Sum([1..n],x->v[x]*ComplexConjugate(S[c][x])));
+	mult:=List([1..n],c->VerlindeFormula(S,i,j,c));
 	if not ForAll(mult,m->IsInt(m) and m>=0) then
 		ErrorNoReturn("Fusion: the Verlinde formula gives non-integer multiplicities, S is not a modular S matrix");
 	fi;
@@ -525,7 +533,7 @@ ShowFusion:=function(arg)
 	local th,lab,ks,i,j;
 	th:=arg[1];
 	if not (IsRecord(th) and IsBound(th.S) and IsBound(th.labels)) then
-		ErrorNoReturn("ShowFusion: the theory has no S matrix; build it with TQDTheory(G,v,rec(ST:=true))");
+		ErrorNoReturn("ShowFusion: the theory has no S matrix. Build it with TQDTheory(G,v,rec(ST:=true))");
 	fi;
 	lab:=th.labels;
 	ks:=[2..Length(lab)];

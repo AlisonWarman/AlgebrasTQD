@@ -1,13 +1,14 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ##  0_load.g		AlgebrasTQD examples
 ##
-##  Read the package and list the main user-level functions. 
-##  Usage, from its directory:  Read("0_load.g");
+##  Read the package and list the main user-level functions
+##  Usage, from its directory:  Read("0_load.g")
 ##
 #############################################################################
 
-# The loader sits one folder above this example file.
+# The loader sits one folder above this example file
 Read(ReplacedString(INPUT_FILENAME(), "0_load.g", "../AlgebrasTQD.g"));
 
 functions := [ "MakeGroup", "MakeGroupLabels", "RelabelGroup", "GroupElement",

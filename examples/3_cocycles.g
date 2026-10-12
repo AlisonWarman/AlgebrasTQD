@@ -1,13 +1,14 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ##  3_cocycles.g                                     AlgebrasTQD examples
 ##
 ##  H^2 and H^3 classes, custom type-II and type-III 3-cocycles, subgroup
 ##  restrictions, and a comparison of type III with D(D8). Usage, from any
-##  directory: Read("path/to/AlgebrasTQD/examples/3_cocycles.g");
+##  directory: Read("path/to/AlgebrasTQD/examples/3_cocycles.g"),
 ##
 ##  GAP does not fix the order of conjugacy classes, characters or anyons,
-##  so spins are compared as collected lists [ value, multiplicity ].
+##  so spins are compared as collected lists [ value, multiplicity ]
 ##
 #############################################################################
 
@@ -19,7 +20,7 @@ Read(ReplacedString(INPUT_FILENAME(), "3_cocycles.g", "../AlgebrasTQD.g"));
 Section := function(title) Print("\n", title, "\n\n"); end;;
 
 #----------------------------------------------------------------------------
-# 1. GammaH2Representatives(F) gives one normalized 2-cocycle per class of H^2(F,U(1)). For omega = 1 these are the choices of gamma in A(H,F,gamma,eps).
+# 1. GammaH2Representatives(F) gives one normalized 2-cocycle per class of H^2(F,U(1)). For omega = 1 these are the choices of gamma in A(H,F,gamma,eps)
 
 Section("|H^2(F,U(1))| for a few groups");
 for name in [ "C2", "S3", "C2 x C2", "C4 x C2", "D8", "Q8" ] do
@@ -27,7 +28,7 @@ for name in [ "C2", "S3", "C2 x C2", "C4 x C2", "D8", "Q8" ] do
 od;
 
 #----------------------------------------------------------------------------
-# 2. H^3(G,U(1)) = Z_n1 x ... x Z_nr. omf(G) gives one cocycle per class, omaut(G) one per automorphism orbit, and H3Cocycle(G,v) the class with coordinates v. These cocycles are normalized by construction.
+# 2. H^3(G,U(1)) = Z_n1 x ... x Z_nr. omf(G) gives one cocycle per class, omaut(G) one per automorphism orbit, and H3Cocycle(G,v) the class with coordinates v. These cocycles are normalized by construction
 
 Section("H^3(G,U(1)) for a few groups");
 Print("GAP prints H^3 as a list of the orders of its cyclic Abelian group factors. For example, [2, 2] means Z2 x Z2.\n");
@@ -48,7 +49,7 @@ for v in [ 0 .. 5 ] do
 od;
 
 #----------------------------------------------------------------------------
-# 3. A custom additive 3-cocycle is a record rec(a,N), with omega = exp(2 pi i a/N). The type-II cocycle of C2 x C2 is (-1)^(x1 y2 y3) for g = a^x b^y. Test a custom cocycle once with 3coctest before using it.
+# 3. A custom additive 3-cocycle is a record rec(a,N), with omega = exp(2 pi i a/N). The type-II cocycle of C2 x C2 is (-1)^(x1 y2 y3) for g = a^x b^y. Test a custom cocycle once with 3coctest before using it
 
 Section("Custom type-II cocycle on C2 x C2");
 K := MakeGroup("C2 x C2");;
@@ -60,7 +61,7 @@ xy := g -> First(Cartesian([0,1],[0,1]), e -> a^e[1]*b^e[2] = g);;
 omII := rec(a := function(g1,g2,g3) return xy(g1)[1]*xy(g2)[2]*xy(g3)[2] mod 2; end, N := 2);;
 Print("type II is a normalized 3-cocycle: ", 3coctest([Elements(K), omII]), "\n");
 
-# A subgroup F can condense only if omega restricted to F is trivial in H^3(F,U(1)). gammaf([F,omega]) gives one trivialization per H^2(F,U(1)) class, or fail.
+# A subgroup F can condense only if omega restricted to F is trivial in H^3(F,U(1)). gammaf([F,omega]) gives one trivialization per H^2(F,U(1)) class, or fail
 Section("Subgroups of C2 x C2 on which the type-II omega is trivial");
 for x in [ a, b, a*b ] do
     gs := gammaf([ Group(x), omII ]);;
@@ -72,7 +73,7 @@ for x in [ a, b, a*b ] do
 od;
 
 #----------------------------------------------------------------------------
-# 4. For C2 x C2 x C2, write g=a^x b^y c^z. The additive type-III cocycle a(g1,g2,g3)=x1*y2*z3 mod 2 gives omega(g1,g2,g3)=(-1)^(x1*y2*z3).
+# 4. For C2 x C2 x C2, write g=a^x b^y c^z. The additive type-III cocycle a(g1,g2,g3)=x1*y2*z3 mod 2 gives omega(g1,g2,g3)=(-1)^(x1*y2*z3)
 
 Section("Custom type-III cocycle on C2 x C2 x C2");
 K3 := MakeGroup("C2 x C2 x C2");;
@@ -115,7 +116,7 @@ if not sameNumber or not sameSpins then
 fi;
 
 #----------------------------------------------------------------------------
-# 5. 3coctest also rejects a cochain that is not a cocycle. NormalizeCocycle replaces a nonnormalized cocycle by a normalized one in the same class.
+# 5. 3coctest also rejects a cochain that is not a cocycle. NormalizeCocycle replaces a nonnormalized cocycle by a normalized one in the same class
 
 Section("Cocycle validation and normalization");
 C3 := MakeGroup("C3");;

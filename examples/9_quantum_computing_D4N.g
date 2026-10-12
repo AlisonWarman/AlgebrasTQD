@@ -1,17 +1,18 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ##  9_quantum_computing_D4N.g               AlgebrasTQD examples
 ##
 ##  Quantum computing gates for D4, D8, and D16. Run from any directory with
-##  Read("path/to/9_quantum_computing_D4N.g").
+##  Read("path/to/9_quantum_computing_D4N.g")
 ##
 #############################################################################
 
 Read(ReplacedString(INPUT_FILENAME(), "9_quantum_computing_D4N.g", "../AlgebrasTQD.g"));
 
-# The three groups D_{4N} have N = 1, 2, 4, respectively.
-# The surgery eigenphases give its logical gate in the computed basis.
-# D4NPhaseGate gives the counterterm circuit and its SPT-stacking logical gate.
+# The three groups D_{4N} have N = 1, 2, 4, respectively
+# The lattice surgery phases give its logical gate in the computational basis
+# D4NPhaseGate gives the counterterm circuit and the SPT-stacking logical gate
 trivial := function(g) return 1; end;;
 
 for N in [1,2,4] do

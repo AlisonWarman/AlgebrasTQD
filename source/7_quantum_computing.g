@@ -1,8 +1,9 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ## source/7_quantum_computing.g       AlgebrasTQD
 ##
-## Non-Abelian-code functions for quantum computing.
+## Non-Abelian-code functions for quantum computing
 ##
 ## Functions in this file (the first line of each header):
 ## - DiagMat: diagonal matrix of a vector
@@ -182,7 +183,7 @@ CliffordLevel:=function(arg)
 	if (not M=M[1][1]*IdentityMat(Length(U))) or M[1][1]=0 then
 		return "input matrix cannot be unitary";
 	fi;
-	#U is not rescaled (Sqrt of an irrational cyclotomic is not available in GAP): the level does not depend on a scalar, canon removes it at level 1 and every conjugate below is divided by mu=(A*Dag(A))[1][1] Membership in a level is invariant under an overall scalar, so every comparison below is made through the representative canon(Q) of the phase class of Q. This also keeps the recursion from repeating each conjugate once per scalar in Dt.
+	#U is not rescaled (Sqrt of an irrational cyclotomic is not available in GAP): the level does not depend on a scalar, canon removes it at level 1 and every conjugate below is divided by mu=(A*Dag(A))[1][1] Membership in a level is invariant under an overall scalar, so every comparison below is made through the representative canon(Q) of the phase class of Q. This also keeps the recursion from repeating each conjugate once per scalar in Dt
 	canon:=function(Q)
 		local i,j;
 		for i in [1..Length(Q)] do
@@ -192,7 +193,7 @@ CliffordLevel:=function(arg)
 		od;
 		ErrorNoReturn("CliffordLevel: the zero matrix is not unitary");
 	end;
-	#Levels above 1 are not groups, so conjugating only the generators of Dt is not enough: use one representative of every phase class of Dt instead. Centre(Dt) is exactly the group of scalar matrices in Dt.
+	#Levels above 1 are not groups, so conjugating only the generators of Dt is not enough: use one representative of every phase class of Dt instead. Centre(Dt) is exactly the group of scalar matrices in Dt
 	paulis:=List(RightCosets(Dt,Centre(Dt)),Representative);
 	canonPaulis:=Set(List(paulis,canon));
 	if canon(U) in canonPaulis then return 1; fi;
@@ -201,7 +202,7 @@ CliffordLevel:=function(arg)
 	while true do
 		if n>maxlevel then
 			ErrorNoReturn("CliffordLevel: no level at or below ",maxlevel,
-				"; pass a larger maxlevel to search further");
+				". Pass a larger maxlevel to search further");
 		fi;
 		bad:=[];
 		for A in As do
@@ -535,7 +536,7 @@ end;
 ##
 ## Hybrid lattice surgery
 ##
-## Merge a D(KL) patch into a D(G) patch, merge the result into a D(KR) patch, and measure the D(G) patch in its logical identity state. The logical action left on the D(KR) qudit is returned. See arXiv:2510.20890.
+## Merge a D(KL) patch into a D(G) patch, merge the result into a D(KR) patch, and measure the D(G) patch in its logical identity state. The logical action left on the D(KR) qudit is returned. See arXiv:2510.20890
 ##
 #############################################################################
 
@@ -596,7 +597,7 @@ end;
 
 #RoughMergeSplit: the logical gate produced by two lattice-surgery merges
 #in: rec(G,KL,vL,HdL,KR,HdR[,gs,kL,kR,Hr,maxlevel,conductor,show,lab,labKR]), the fields described at the start of the function
-#out: rec(U,mu,P,inG,eigenvalues,multiplicities,eigenphases[,Unorm,Dt,clifford,level]) with U*Dag(U)=mu*1 and Unorm=U/Sqrt(mu) the unitary logical action on the right patch (bound only for a rational mu; otherwise eigenvalues are those of U, a common scalar times those of the unitary); inG the merged state, normalized only when its norm is rational; eigenvalues the DISTINCT eigenvalues, in the order returned by Eigenvalues (not fixed), with their algebraic multiplicities (an error asks for inp.conductor if some lie outside CF(m)), and eigenphases=eigenvalues/eigenvalues[1], so for a 2x2 Unorm the relative phase is defined only up to inversion; Dt, clifford (and level with inp.maxlevel) only when KR is cyclic and kR lists the powers of kR[2] in order (the basis of the clock and shift of Dtilde)
+#out: rec(U,mu,P,inG,eigenvalues,multiplicities,eigenphases[,Unorm,Dt,clifford,level]) with U*Dag(U)=mu*1 and Unorm=U/Sqrt(mu) the unitary logical action on the right patch (bound only for a rational mu, otherwise eigenvalues are those of U, a common scalar times those of the unitary), inG the merged state, normalized only when its norm is rational, eigenvalues the DISTINCT eigenvalues, in the order returned by Eigenvalues (not fixed), with their algebraic multiplicities (an error asks for inp.conductor if some lie outside CF(m)), and eigenphases=eigenvalues/eigenvalues[1], so for a 2x2 Unorm the relative phase is defined only up to inversion, Dt, clifford (and level with inp.maxlevel) only when KR is cyclic and kR lists the powers of kR[2] in order (the basis of the clock and shift of Dtilde)
 RoughMergeSplit:=function(inp)
 	local G,gs,KL,kL,vL,KR,kR,Hr,show,lab,labKR,labR,Rv,Lk,
 	      GK,eGR,eKR,pGR,pKR,Hdr,first,inG,nrm,
@@ -645,7 +646,7 @@ RoughMergeSplit:=function(inp)
 	if nrm=0 then
 		ErrorNoReturn("RoughMergeSplit: the merged state has no |1>_KL component");
 	fi;
-	#normalize only for a rational norm (GAP has no Sqrt of an irrational cyclotomic); U is rescaled by mu below anyway
+	#normalize only for a rational norm (GAP has no Sqrt of an irrational cyclotomic), U is rescaled by mu below anyway
 	if IsRat(nrm) and nrm<>1 then inG:=inG/Sqrt(nrm); fi;
 	if show then
 		Print("\nstate merged into D(G):\n");
@@ -684,7 +685,7 @@ RoughMergeSplit:=function(inp)
 	mu:=M[1][1];
 	if mu=0 then ErrorNoReturn("RoughMergeSplit: zero logical action"); fi;
 	res:=rec(U:=U,mu:=mu,P:=P,inG:=inG);
-	#U*Dag(U)=mu*1 was tested above; Unorm=U/Sqrt(mu) only for a rational mu (no Sqrt of an irrational cyclotomic in GAP), otherwise the eigenvalues are those of U (sqrt(mu) times those of the unitary), which leaves the eigenphases unchanged
+	#U*Dag(U)=mu*1 was tested above, Unorm=U/Sqrt(mu) only for a rational mu (no Sqrt of an irrational cyclotomic in GAP), otherwise the eigenvalues are those of U (sqrt(mu) times those of the unitary), which leaves the eigenphases unchanged
 	if IsRat(mu) then
 		Un:=U/Sqrt(mu);
 		res.Unorm:=Un;
@@ -702,7 +703,7 @@ RoughMergeSplit:=function(inp)
 		return k;
 	end);
 	if Sum(mult)<>Length(kR) then
-		ErrorNoReturn("RoughMergeSplit: some eigenvalues are not in CF(",m,"); pass a larger inp.conductor");
+		ErrorNoReturn("RoughMergeSplit: some eigenvalues are not in CF(",m,"). Pass a larger inp.conductor");
 	fi;
 	res.eigenvalues:=ev; res.multiplicities:=mult; res.eigenphases:=ev/ev[1];
 	#the clock and shift of Dtilde(d,1) act on the basis g^0,...,g^(d-1): only meaningful for kR the powers of a generator in order
@@ -722,7 +723,7 @@ end;
 ##
 ## Constant-depth logical phase gates from 2-cocycles
 ##
-## A 2-cocycle alpha stacked on a spatial slice, with a 1-cochain counterterm beta on each boundary, gives a topological logical gate. See arXiv:2512.13777.
+## A 2-cocycle alpha stacked on a spatial slice, with a 1-cochain counterterm beta on each boundary, gives a topological logical gate. See arXiv:2512.13777
 ##
 #############################################################################
 
@@ -818,7 +819,7 @@ end;
 ##
 ## The D_{4N} code family
 ##
-## D_{4N} = < r,s | r^{4N}=s^2=1, s r s=r^{-1} > is the group behind the logical T^{1/N}=diag(1,e^{i pi/(4N)}) gates of arXiv:2510.20890 (by hybrid lattice surgery) and of arXiv:2512.13777 (in constant depth).
+## D_{4N} = < r,s | r^{4N}=s^2=1, s r s=r^{-1} > is the group behind the logical T^{1/N}=diag(1,e^{i pi/(4N)}) gates of arXiv:2510.20890 (by hybrid lattice surgery) and of arXiv:2512.13777 (in constant depth)
 ##
 #############################################################################
 
@@ -904,7 +905,7 @@ D4NCocycle:=function(inp)
 	alpha:=function(g1,g2)
 		return alpha1(g1,g2)*kappa(g1)*kappa(g2)/kappa(g1*g2);
 	end;
-	#the boundary counterterm on <r>, fixed by beta(r)=e^{i pi/(4N)}; IsTrivial2coc reads the fixed value in units of 1/m, m=4 the common root order of alpha on <r>, so -1/(2N) is -1/(8N) turns and br(r)=E(8N) after the conjugation below
+	#the boundary counterterm on <r>, fixed by beta(r)=e^{i pi/(4N)}, IsTrivial2coc reads the fixed value in units of 1/m, m=4 the common root order of alpha on <r>, so -1/(2N) is -1/(8N) turns and br(r)=E(8N) after the conjugation below
 	br:=IsTrivial2coc([ElF,alpha,[[r,-1/(2*N)]]]);
 	if br=fail then ErrorNoReturn("D4NCocycle: alpha is not trivial on <r>"); fi;
 	br:=ComplexConjugate(br);

@@ -1,14 +1,15 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ##  4_algebras.g                                     AlgebrasTQD examples
 ##
-##  Condensable algebras A(H,N,gamma,eps) of the toric code, double semion, the type-II twisted double of C2 x C2, D(S3), and D(D8). Show their anyon content, algebra filters, selected algebras in detail, and LaTeX output. Usage, from any directory: Read("path/to/AlgebrasTQD/examples/4_algebras.g");
+##  Condensable algebras A(H,N,gamma,eps) of the toric code, double semion, the type-II twisted double of C2 x C2, D(S3), and D(D8). Show their anyon content, algebra filters, selected algebras in detail, and LaTeX output. Usage, from any directory: Read("path/to/AlgebrasTQD/examples/4_algebras.g")
 ##
-##  GAP does not fix the order of conjugacy classes, characters, anyons or subgroups, so algebras are found here by their properties, not by position.
+##  GAP does not fix the order of conjugacy classes, characters, anyons or subgroups, so algebras are found here by their properties, not by position
 ##
 #############################################################################
 
-# The loader sits one folder above this example file.
+# The loader sits one folder above this example file
 Read(ReplacedString(INPUT_FILENAME(), "4_algebras.g", "../AlgebrasTQD.g"));
 
 #Section: prints a heading with a blank line below it
@@ -17,7 +18,7 @@ Read(ReplacedString(INPUT_FILENAME(), "4_algebras.g", "../AlgebrasTQD.g"));
 Section := function(title) Print("\n", title, "\n\n"); end;;
 
 #----------------------------------------------------------------------------
-# 1. The algebras of D(Z2), the toric code.
+# 1. The algebras of D(Z2), the toric code
 
 Section("The algebras of D(Z2) (toric code)");
 C2 := MakeGroup("C2");;
@@ -26,7 +27,7 @@ LC2 := AlgebrasWithAnyons(thC2);;
 ShowAlgebrasWithAnyons(LC2);
 
 #----------------------------------------------------------------------------
-# 2. The nontrivial 3-cocycle of Z2 gives the double semion theory.
+# 2. The nontrivial 3-cocycle of Z2 gives the double semion theory
 
 Section("The algebras of the double semion theory");
 thDS := TQDTheory(C2, [1]);;
@@ -34,7 +35,7 @@ LDS := AlgebrasWithAnyons(thDS);;
 ShowAlgebrasWithAnyons(LDS);
 
 #----------------------------------------------------------------------------
-# 3. The type-II twisted Z2 x Z2 (see examples/1_Abelian.g) has fewer algebras because omega restricted to <ab> is not trivial. One reduced theory is itself twisted, Z(Vec_C2^alpha).
+# 3. The type-II twisted Z2 x Z2 (see examples/1_Abelian.g) has fewer algebras because omega restricted to <ab> is not trivial. One reduced theory is itself twisted, Z(Vec_C2^alpha)
 
 Section("The algebras of the type-II twisted Z2 x Z2");
 K := MakeGroup("C2 x C2");;
@@ -49,7 +50,7 @@ LK := AlgebrasWithAnyons(thK);;
 for r in LK do
     ShowAlgData(thK, r.A);;
 od;
-# The long form also prints the nontrivial values of gamma, eps and of the 3-cocycle alpha of the reduced theory: here for H = <ab>, N = 1.
+# The long form also prints the nontrivial values of gamma, eps and of the 3-cocycle alpha of the reduced theory: here for H = <ab>, N = 1
 Print("\nA(<ab>, 1, 1, 1) in the long form:\n");
 r := First(LK, r -> r.H = Group(a*b) and IsTrivial(r.F));;
 ShowAlgData(thK, r.A, rec(opP := "long"));;
@@ -57,7 +58,7 @@ Print("untwisted D(C2 x C2) has ", Length(TQDAlgebras(TQDTheory(K))), " algebras
       "the type-II twist ", Length(TQDAlgebras(thK)), "\n");
 
 #----------------------------------------------------------------------------
-# 4. The algebras of D(S3): one line per algebra with its dimension, its name A(H, N, gamma, eps), the group K = H/N, and its anyons.
+# 4. The algebras of D(S3): one line per algebra with its dimension, its name A(H, N, gamma, eps), the group K = H/N, and its anyons
 
 Section("The algebras of D(S3)");
 S3 := MakeGroup("S3");;
@@ -66,35 +67,35 @@ L := AlgebrasWithAnyons(th);;
 ShowAlgebrasWithAnyons(L);
 
 #----------------------------------------------------------------------------
-# 5. Filters: the algebras of a given dimension, the Lagrangian ones (dimension |G|, the gapped boundaries), or those on given subgroups.
+# 5. Filters: the algebras of a given dimension, the Lagrangian ones (dimension |G|, the gapped boundaries), or those on given subgroups
 
 Section("Filters for D(S3)");
 Print("Lagrangian algebras of D(S3):\n");
 for A in TQDAlgebras(th, rec(Lag := true)) do Print("  ", AlgebraName(A, th.glG), "\n"); od;
 Print("algebras of dimension 3:\n");
 for A in TQDAlgebras(th, rec(dim := 3)) do Print("  ", AlgebraName(A, th.glG), "\n"); od;
-# The sign charge: trivial flux, dimension 1, a character that is not 1.
+# The sign charge: trivial flux, dimension 1, a character that is not 1
 sgn := th.labels[First([1..Length(th.aG)], i -> IsOne(th.aG[i][1]) and dima(th.aG[i], One(S3)) = 1 and
     ForAny(S3, g -> not LookupDictionary(th.aG[i][2], g) in [ 1, fail ]))];;
 Print("algebras containing the anyon ", sgn, ":\n");
 for r in FindAlgebras(L, rec(contains := sgn)) do Print("  ", r.name, "\n"); od;
 
 #----------------------------------------------------------------------------
-# 6. One algebra in detail: H = S3, N = C3. ShowAlgData prints the name, dimension, H/N, the reduced topological order and the anyons.
+# 6. One algebra in detail: H = S3, N = C3. ShowAlgData prints the name, dimension, H/N, the reduced topological order and the anyons
 
 Section("A(S3, C3, 1, 1) in detail");
 r := First(L, r -> Size(r.H) = 6 and Size(r.F) = 3);;
 ShowAlgData(th, r.A);;
 
 #----------------------------------------------------------------------------
-# 7. AlgebraDisplayData returns the strings of ShowAlgData, also in TeX.
+# 7. AlgebraDisplayData returns the strings of ShowAlgData, also in TeX
 
 Section("LaTeX strings of A(S3, C3, 1, 1)");
 r := AlgebraDisplayData(th, First(L, r -> Size(r.H) = 6 and Size(r.F) = 3).A);;
 Print(r.nameTeX, "\n", r.decompositionTeX, "\n", r.reducedTOTeX, "\n");
 
 #----------------------------------------------------------------------------
-# 8. List the algebras of D(D8) with their anyon content, as for D(S3).
+# 8. List the algebras of D(D8) with their anyon content, as for D(S3)
 
 Section("The algebras of D(D8)");
 D8 := MakeGroup("D8");;
@@ -110,7 +111,7 @@ rD8 := First(LD8, r -> r.H = D8 and r.F = Center(D8));;
 ShowAlgData(thD8, rD8.A);;
 
 #----------------------------------------------------------------------------
-# 9. The number of algebras for every twist of D8, one per orbit of H^3(D8,U(1)) under the automorphisms of D8 (sorted, since the orbits come in no fixed order).
+# 9. The number of algebras for every twist of D8, one per orbit of H^3(D8,U(1)) under the automorphisms of D8 (sorted, since the orbits come in no fixed order)
 
 Section("The number of algebras of every twisted double of D8");
 Print(SortedList(List(omaut(D8), om -> Length(TQDAlgebras(TQDTheory(D8, om))))), "\n");

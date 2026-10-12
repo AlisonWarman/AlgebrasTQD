@@ -1,13 +1,14 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ##  AlgebrasTQD.g		AlgebrasTQD
 ##
-##  Global package source loader.
+##  Global package source loader
 ##  Usage, from its directory:  Read("AlgebrasTQD.g");
 ##
 #############################################################################
 
-# Check that the required GAP packages are available before reading the source files.
+# Check that the required GAP packages are available before reading the source files
 for pkg in [ "HAP", "CTblLib", "IO" ] do
     if LoadPackage(pkg) = fail then
         ErrorNoReturn("AlgebrasTQD requires the GAP package ", pkg);
@@ -15,7 +16,7 @@ for pkg in [ "HAP", "CTblLib", "IO" ] do
 od;
 
 # Declare cross-file names so GAP can read the seven numbered files without forward-
-# reference warnings. The function definitions remain in their subject files.
+# reference warnings. The function definitions remain in their subject files
 DeclareGlobalName("RelabelGroup");
 DeclareGlobalName("AlgAnyonsV");
 DeclareGlobalName("AlgAnyonsG1G2V");
@@ -27,10 +28,10 @@ DeclareGlobalName("AnyonLabelStrings");
 DeclareGlobalName("IsNormalizedCocycle");
 DeclareGlobalName("HasseEntryTeX");
 
-# The folder of this loader, e.g. "../" when read as Read("../AlgebrasTQD.g").
+# The folder of this loader, e.g. "../" when read as Read("../AlgebrasTQD.g")
 AlgebrasTQDRoot := ReplacedString(INPUT_FILENAME(), "AlgebrasTQD.g", "");
 
-# File 0 is the preliminary Gruen-Morrison code, kept intact.
+# File 0 is the preliminary Gruen-Morrison code, kept intact
 for file in [ "0_Modular_Data_Mignard-Schauenburg-Gruen-Morrison.g",
               "1_preliminaries.g",
               "2_anyons.g",

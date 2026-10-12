@@ -1,16 +1,17 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ## source/5_interface_map.g           AlgebrasTQD
 ##
-## Maps from algebra data to anyons across interfaces.
+## Maps from algebra data to anyons across interfaces
 ##
 ## Functions in this file (the first line of each header):
 ## - AlgAnyonsProducts: decomposes an algebra of G = G1 x ... x Gk into the product anyons a1 x ... x ak, ai of Z(Vec_Gi) (eq. (scalar_prod_anyon_decom), Gruen-Morrison (2.10))
-## - AlgAnyonsV: decomposes an algebra into anyons (the case k=1 of AlgAnyonsProducts; the direct formula is AlgAnyonsVOld in extra.g)
+## - AlgAnyonsV: decomposes an algebra into anyons (the case k=1 of AlgAnyonsProducts)
 ## - AlgAnyons: decomposes an algebra into anyons and prints the decomposition
 ## - AlgAnyonsG1G2V: the case k=2 of AlgAnyonsProducts, with the old list input (opA="*" conjugates the second copy only)
-## - alphaf: the condensed theory K=H/F of an algebra A(H,F,gamma,eps) and its 3-cocycle alpha, TwinAlgebras.tex eq. (twist_reduced_TO) with Changes 1.1, 1.2 of ../latex/Twin_Algebras_revision.tex
-## - InterfaceMap: the anyon map across the interface of an algebra A(H,F,gamma,eps) of Z(Vec_G^omega) to Z(Vec_K^alpha), K=H/F, read off one folded Lagrangian algebra containing A x A(K,1,1,1) (TwinAlgebras.tex sec. Fold; all maps: AllInterfaceMaps)
+## - alphaf: the condensed theory K=H/F of an algebra A(H,F,gamma,eps) and its 3-cocycle alpha, arXiv:2605.31602 eq. (twist_reduced_TO), with changes 1.1 and 1.2
+## - InterfaceMap: the anyon map across the interface of an algebra A(H,F,gamma,eps) of Z(Vec_G^omega) to Z(Vec_K^alpha), K=H/F, read off one folded Lagrangian algebra containing A x A(K,1,1,1) (arXiv:2605.31602 sec. Fold, all maps: AllInterfaceMaps)
 ## - AlgebrasWithAnyons: every algebra of a theory together with its decomposition into anyons
 ## - ShowAlgebrasWithAnyons: prints one line per algebra: index, dimension, name, condensed group K, decomposition
 ## - FindAlgebras: the algebras of a list from AlgebrasWithAnyons with a given anyon content
@@ -61,7 +62,7 @@ AlgAnyonsProducts:=function(inp)
 		if stars[i]="*" then return ComplexConjugate(LookupDictionary(a[2],h)); fi;
 		return LookupDictionary(a[2],h);
 	end;
-	#per flux x, computed once and shared by all anyons (tuples) with flux x: W, the list of [[p1(h),...,pk(h)],w(h)] over h in C_G(x) with w(h)<>0, where w(h) is the sum over f in the class of x (c with f^c=x, g=c h c^-1) of t(f,g), the sum over the cosets yH, times the conjugated phase of Gruen-Morrison (2.10) when twisted; then n_a=sum conj(ch(h))w(h)/|G|
+	#per flux x, computed once and shared by all anyons (tuples) with flux x: W, the list of [[p1(h),...,pk(h)],w(h)] over h in C_G(x) with w(h)<>0, where w(h) is the sum over f in the class of x (c with f^c=x, g=c h c^-1) of t(f,g), the sum over the cosets yH, times the conjugated phase of Gruen-Morrison (2.10) when twisted, then n_a=sum conj(ch(h))w(h)/|G|
 	fluxCache:=NewDictionary(One(G),true,G);
 	na:=[];
 	dimna:=0;
@@ -118,7 +119,7 @@ AlgAnyonsProducts:=function(inp)
 	return [dimA,na];
 end;
 
-#AlgAnyonsV: decomposes an algebra into anyons (the case k=1 of AlgAnyonsProducts; the direct formula is AlgAnyonsVOld in extra.g)
+#AlgAnyonsV: decomposes an algebra into anyons (the case k=1 of AlgAnyonsProducts)
 #in: [[H,F,gamma,eps,G],anyons] or [[H,F,gamma,eps,G],anyons,omega] with the algebra from AlgebraData, anyons from Anyons, omega=rec(a,N) additive
 #out: [dimA,na] with dimA the algebra dimension and na the multiplicity of each anyon
 AlgAnyonsV:=function(inp)
@@ -156,7 +157,7 @@ AlgAnyonsG1G2V:=function(inp)
 end;
 
 
-#alphaf: the condensed theory K=H/F of an algebra A(H,F,gamma,eps) and its 3-cocycle alpha, TwinAlgebras.tex eq. (twist_reduced_TO) with Changes 1.1, 1.2 of ../latex/Twin_Algebras_revision.tex
+#alphaf: the condensed theory K=H/F of an algebra A(H,F,gamma,eps) and its 3-cocycle alpha, arXiv:2605.31602 eq. (twist_reduced_TO), with changes 1.1 and 1.2
 #in: [algebra] or [algebra,omega] with algebra=[H,F,gamma,eps,G] and omega=rec(a,N) additive
 #out: [[pG,pK,eG,eK,p],ElK,ala,GK,omfull,Ualm]: ala=rec(a,N) is alpha with the bar on ElK, omfull=omega x bar alpha on GK=GxK, Ualm the values of alpha<>1
 alphaf:=function(data)
@@ -170,7 +171,7 @@ alphaf:=function(data)
 	if Length(data)>1 then
 		omega:=data[2];
 		ElG:=Elements(G);
-		#only Uom=[1] (omega identically 0) is tested below; ForAll stops at the first nonzero value
+		#only Uom=[1] (omega identically 0) is tested below, ForAll stops at the first nonzero value
 		if ForAll(ElG,g1->ForAll(ElG,g2->ForAll(ElG,g3->omega.a(g1,g2,g3) mod omega.N=0))) then
 			Uom:=[1];
 		else
@@ -191,7 +192,7 @@ alphaf:=function(data)
 
 
 	ElK:=Elements(K);
-	#the section below stores One(H) at position 1, so the identity of K must come first (true for the sorted elements of the pc and perm quotients of GAP); otherwise put it first
+	#the section below stores One(H) at position 1, so the identity of K must come first (true for the sorted elements of the pc and perm quotients of GAP), otherwise put it first
 	if ElK[1]<>One(K) then ElK:=Concatenation([One(K)],Filtered(ElK,k->k<>One(K))); fi;
 	preim:=List(ElK,k->Elements(PreImages(p,k)));
 	#one normalized section s of p (s(1)=1)
@@ -201,7 +202,7 @@ alphaf:=function(data)
 	taup:=function(x,y,z) return s(x*y*z)^-1*s(x)*s(y)*s(x*y)^-1*s(x*y*z); end;
 	
 	omm:=function(a,b,c) if Uom=[1] then return 1; fi; return E(omega.N)^(omega.a(a,b,c)); end;
-	#alpha(x,y,z) of eq. (twist_reduced_TO) with Changes 1.1, 1.2 of Twin_Algebras_revision.tex, factor by factor; yp=s(xy)^-1 s(xyz)=s(z)tau_4 and tp^-1=tau_3^{s(z)tau_4}, with f^g=g^-1 f g
+	#alpha(x,y,z) of eq. (twist_reduced_TO) with Changes 1.1, 1.2 of arXiv:2605.31602, factor by factor, yp=s(xy)^-1 s(xyz)=s(z)tau_4 and tp^-1=tau_3^{s(z)tau_4}, with f^g=g^-1 f g
 	alm:=function(x,y,z)
 		local tp,yp;
 		tp:=taup(x,y,z); yp:=s(x*y)^-1*s(x*y*z);
@@ -217,7 +218,7 @@ alphaf:=function(data)
 	for t in Flat(almtab) do
 		if t<>1 and not t in Ualm then Add(Ualm,t); fi;
 	od;
-	#alpha identically 1 (Ualm=[]) is a normalized 3-cocycle; otherwise test the cocycle condition and normalization once
+	#alpha identically 1 (Ualm=[]) is a normalized 3-cocycle, otherwise test the cocycle condition and normalization once
 	if Ualm<>[] and 3coctestm([ElK,almt])=false then
 		ErrorNoReturn("alphaf: eq. (twist_reduced_TO) gave no normalized 3-cocycle for ",
 			StructureDescription(G), " with H=", StructureDescription(H),
@@ -255,7 +256,7 @@ alphaf:=function(data)
 			return (atab[Position(ElK,x)][Position(ElK,y)][Position(ElK,z)]) mod m;
 		end;
 		#pullback test p^*alpha ~ omega|H, not called:
-		#pbtest:=function() local pala,lcm; if Uom=[1] then pala:=rec(a:=function(g1,g2,g3) return ala(p(g1),p(g2),p(g3)); end, N:=m); else lcm:=Lcm(omega.N,m); pala:=rec(a:=function(g1,g2,g3) return ((lcm/omega.N)*omega.a(g1,g2,g3)+(lcm/m)*ala(p(g1),p(g2),p(g3))) mod lcm; end, N:=lcm); fi; if gammaf([H,pala])=fail then return false; else return true; fi; end; ala is the bar of alm, already tested by 3coctestm above
+		#pbtest:=function() local pala,lcm if Uom=[1] then pala:=rec(a:=function(g1,g2,g3) return ala(p(g1),p(g2),p(g3)) end, N:=m) else lcm:=Lcm(omega.N,m) pala:=rec(a:=function(g1,g2,g3) return ((lcm/omega.N)*omega.a(g1,g2,g3)+(lcm/m)*ala(p(g1),p(g2),p(g3))) mod lcm end, N:=lcm) fi if gammaf([H,pala])=fail then return false else return true fi end ala is the bar of alm, already tested by 3coctestm above
 		if Uom=[1] then
 			return [[pG,pK,eG,eK,p], ElK, rec(a:=ala, N:=m), GK, rec(a:=function(x,y,z) return ala(pK(x),pK(y),pK(z)); end, N:=m), Ualm];
 		else
@@ -268,9 +269,9 @@ end;
 
 
 
-#InterfaceMap: the anyon map across the interface of an algebra A(H,F,gamma,eps) of Z(Vec_G^omega) to Z(Vec_K^alpha), K=H/F, read off one folded Lagrangian algebra containing A x A(K,1,1,1) (TwinAlgebras.tex sec. Fold; all maps: AllInterfaceMaps)
+#InterfaceMap: the anyon map across the interface of an algebra A(H,F,gamma,eps) of Z(Vec_G^omega) to Z(Vec_K^alpha), K=H/F, read off one folded Lagrangian algebra containing A x A(K,1,1,1) (arXiv:2605.31602 sec. Fold, all maps: AllInterfaceMaps)
 #in: (th,A[,opts]) with th from TQDTheory (or a record with aG, [om], [glG]), A an algebra [H,F,gamma,eps,G] or a record from AlgebrasWithAnyons, and opts a record with optional fields alpha (alphaf output), gen (elements of H giving m1, m2, ... of an untwisted abelian K), glK, aK (anyons of K built with opA:="*" and om:=ala)
-#out: rec(m,aK,labK,K,ala,L,c) after printing the map: m[b][a] rows aK (barred, theta(b)=conj(theta(a)) for dim A>1), columns aG, row 1 = decomposition of A; dim A=1: m identity, aK=aG; Lagrangian: m=[na], aK=fail
+#out: rec(m,aK,labK,K,ala,L,c) after printing the map: m[b][a] rows aK (barred, theta(b)=conj(theta(a)) for dim A>1), columns aG, row 1 = decomposition of A, dim A=1: m identity, aK=aG, Lagrangian: m=[na], aK=fail
 InterfaceMap:=function(arg)
 	local inp,f,H,F,gamma,eps,G,aG,om,zero,lab,thA,naA,dimA,out,pG,pK,eG,eK,p,ElK,K,ala,GK,omfull,Ualm,glK,gen,aK,labK,
 		HL,gammaL,epsres,A,L,c,t,m,printmap,k,pos,cand;
@@ -328,7 +329,7 @@ InterfaceMap:=function(arg)
 	#K is the group object of alphaf (Image(p)), not a new group
 	ElK:=out[2]; K:=Image(p); ala:=out[3]; GK:=out[4]; omfull:=out[5]; Ualm:=out[6];
 
-	#anyons of the reduced theory, the barred factor of the folded theory (opA:="*"); k in K labelled by its shortest G-label
+	#anyons of the reduced theory, the barred factor of the folded theory (opA:="*"), k in K labelled by its shortest G-label
 	if IsBound(inp.glK) then glK:=inp.glK;
 	else
 		glK:=[ElK,List(ElK,function(k)
@@ -364,7 +365,7 @@ InterfaceMap:=function(arg)
 	#A x A(K,1,1,1) in the folded theory (eq. (alg_to_include))
 	A:=[Group(Concatenation(eG(Elements(H)),eK(ElK))),eG(F),
 		function(g,h) return gamma(pG(g),pG(h)); end,function(g,h) return eps(pG(g),pG(h)); end,GK];
-	#the first Lagrangian algebra L(H^diag,phi) of the folded theory that contains it; the inclusion is tested in the folded theory, whose cocycle omfull is also that of L, so it is passed even when omega is trivial (alpha need not be)
+	#the first Lagrangian algebra L(H^diag,phi) of the folded theory that contains it, the inclusion is tested in the folded theory, whose cocycle omfull is also that of L, so it is passed even when omega is trivial (alpha need not be)
 	HL:=Group(List(Elements(H),h->eG(h)*eK(p(h))));
 	gammaL:=gammaf([HL,omfull]);
 	if gammaL=fail then ErrorNoReturn("InterfaceMap: folded cocycle obstructed"); fi;
@@ -459,7 +460,7 @@ end;
 
 #AnyonPermutation: (helper) the anyon permutation of a Lagrangian algebra of the doubled theory, if it is one
 #in: (th,D,L) with th as in DoubledTheory, D its output and L=[H,H,gamma,eps,KK] a Lagrangian algebra of D.KK
-#out: the list p with L = sum_a a x bar(aG[p[a]]), i.e. the decomposition of L over the products aG[a] x aG[b] (second copy conjugated, AlgAnyonsProducts with stars ["","*"]) is 1 for b=p[a] and 0 otherwise; fail if it is not of this form
+#out: the list p with L = sum_a a x bar(aG[p[a]]), i.e. the decomposition of L over the products aG[a] x aG[b] (second copy conjugated, AlgAnyonsProducts with stars ["","*"]) is 1 for b=p[a] and 0 otherwise, fail if it is not of this form
 AnyonPermutation:=function(th,D,L)
 	local r,n,na,p,a,b;
 	r:=rec(A:=L,ps:=D.ps,es:=D.es,aGs:=[th.aG,th.aG],stars:=["","*"]);
@@ -478,7 +479,7 @@ end;
 
 #CheckPermutation: (helper) consistency test of an anyon permutation: a braided autoequivalence preserves the vacuum and the topological spins theta=chi(g)/chi(1)
 #in: (aG,p) with aG a list of anyons and p a permutation of [1..Length(aG)] as a list
-#out: nothing; an error if p moves the vacuum or changes a spin
+#out: nothing, an error if p moves the vacuum or changes a spin
 CheckPermutation:=function(aG,p)
 	local spin,a;
 	spin:=a->LookupDictionary(a[2],a[1])/LookupDictionary(a[2],One(a[1]));
@@ -540,9 +541,9 @@ AutomorphismsDG:=function(th)
 	return out;
 end;
 
-#AllInterfaceMaps: all anyon maps of the interfaces defined by an algebra, from the one map of InterfaceMap: the folded Lagrangian algebras are related by braided autoequivalences of the reduced theory (TwinAlgebras.tex, after eq. (Afolded)), so the maps are P.m for the permutation matrices P of AutomorphismsAnyons
+#AllInterfaceMaps: all anyon maps of the interfaces defined by an algebra, from the one map of InterfaceMap: the folded Lagrangian algebras are related by braided autoequivalences of the reduced theory (arXiv:2605.31602, after eq. (Afolded)), so the maps are P.m for the permutation matrices P of AutomorphismsAnyons
 #in: (I[,auts]) with I a record of InterfaceMap and auts a list of records with field perm, permutations of the rows of I.m (default AutomorphismsAnyons(rec(G:=I.K,aG:=I.aK,om:=I.ala)))
-#out: the distinct matrices m' with m'[perm[b]]=I.m[b], as records rec(m,auts) with auts the positions in auts giving m'; the first is I.m itself. For a Lagrangian algebra (I.aK=fail) the list [rec(m:=I.m,auts:=[])]
+#out: the distinct matrices m' with m'[perm[b]]=I.m[b], as records rec(m,auts) with auts the positions in auts giving m', the first is I.m itself. For a Lagrangian algebra (I.aK=fail) the list [rec(m:=I.m,auts:=[])]
 AllInterfaceMaps:=function(arg)
 	local I,auts,out,k,m,b,pos;
 	I:=arg[1];

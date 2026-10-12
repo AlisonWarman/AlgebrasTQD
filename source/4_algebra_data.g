@@ -1,8 +1,9 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ## source/4_algebra_data.g             AlgebrasTQD
 ##
-## Epsilon calculations, subgroup enumeration, and algebra data.
+## Epsilon calculations, subgroup enumeration, and algebra data
 ##
 ## Functions in this file (the first line of each header):
 ## - GammaTest: tests the assumption of epsf on a gamma that does not come from gammaf
@@ -15,7 +16,7 @@
 ## - TQDAlgebras: the algebras of a theory that pass a filter
 ## - AlgebraName: a one-line name of an algebra
 ## - ShowFgammagl: prints F and the nontrivial values of gamma
-## - TeXGroupName: a group name in the notation of TwinAlgebras.tex
+## - TeXGroupName: a group name in the notation of arXiv:2605.31602
 ## - TeXLabel: a group-element or anyon label in LaTeX (math mode)
 ## - AlgebraDisplayData: the display data of one algebra of a theory, for ShowAlgData and the LaTeX tables (prints nothing)
 ## - ShowAlgData: prints one algebra: name, dimension, H/N, reduced TO, anyons (opP:="long": H, N and the values of gamma, eps, alpha)
@@ -34,7 +35,7 @@ end;
 
 #epsfA: the solutions eps of the epsilon relations for abelian H (the gauge is trivial, all are returned)
 #in: [H,F,gamma] or [H,F,gamma,omega], H abelian, gamma a normalized trivialization of omega|F, omega=rec(a,N)
-#out: the list of eps(h,f); fail or [] when there is none
+#out: the list of eps(h,f), fail or [] when there is none
 epsfA:=function(inpdata)
 	local H,F,gamma,ElF,Ugamma,ElD,ElH,Uom,g1,g2,g3,omega,omegam,t,epstest,epsFF,epsFFt,f1,f2,chtabF,clF,chF,genH,genHnotF,h,poss1,poss,beta,betat,kh,sol,Herm,Hermt,v,lb,mtoa,r,roots,rootData,Mv,n1,n2,tocart,n,p,epstabs,known,epstab,i,setvalh1h2,f,epssols,h1,h2,epsnumsfinal,epsnums,epsfinal,khn;
 	H:=inpdata[1];
@@ -50,7 +51,7 @@ epsfA:=function(inpdata)
 		ErrorNoReturn("epsf: F must be normal in H");
 	fi;
 	if not IsFunction(gamma) then ErrorNoReturn("epsf: gamma must be a function"); fi;
-	#gamma is assumed to be a normalized trivialization of omega|F (omega=1 for 3-argument input), as returned by gammaf (correct by construction). For a gamma from another source call GammaTest(inpdata) first.
+	#gamma is assumed to be a normalized trivialization of omega|F (omega=1 for 3-argument input), as returned by gammaf (correct by construction). For a gamma from another source call GammaTest(inpdata) first
 	ElF:=Elements(F);
 	if ElF=[One(F)] then
 		return [function(h,f) return 1; end];  
@@ -61,7 +62,7 @@ epsfA:=function(inpdata)
 	ElH:=Concatenation(ElF,ElD);
 	if not IsBound(Uom) then
 		omegam:=function(g1,g2,g3) return E(omega.N)^(omega.a(g1,g2,g3)); end;
-		#only Uom=[1] (omega|H identically 0) is tested below; ForAll stops at the first nonzero value
+		#only Uom=[1] (omega|H identically 0) is tested below, ForAll stops at the first nonzero value
 		if ForAll(ElH,g1->ForAll(ElH,g2->ForAll(ElH,g3->omega.a(g1,g2,g3) mod omega.N=0))) then
 			Uom:=[1];
 		else
@@ -77,7 +78,7 @@ epsfA:=function(inpdata)
 				for h2 in ElH do
 					for f in ElF do
 						test:=(eps(h1*h2,f)=eps(h1,f)*eps(h2,f));
-						if test=false then return false; fi; #Print([false,1,h1,h2,f]); return false; fi;
+						if test=false then return false; fi; #Print([false,1,h1,h2,f]) return false fi
 					od;
 				od;
 			od;
@@ -85,7 +86,7 @@ epsfA:=function(inpdata)
 				for f2 in ElF do
 					for h in ElH do
 						test:=(eps(h,f1*f2)=eps(h,f1)*eps(h,f2));
-						if test=false then return false; fi; #Print([false,2,f1,f2,h]); return false; fi;
+						if test=false then return false; fi; #Print([false,2,f1,f2,h]) return false fi
 					od;
 				od;
 			od;
@@ -94,7 +95,7 @@ epsfA:=function(inpdata)
 				for h2 in ElH do
 					for f in ElF do
 						test:=(eps(h1*h2,f)=eps(h1,f)*eps(h2,f)*3cocr(omegam,h1,h2,f));
-						if test=false then return false; fi; #Print([false,1,h1,h2,f],"om"); return false; fi;
+						if test=false then return false; fi; #Print([false,1,h1,h2,f],"om") return false fi
 					od;
 				od;
 			od;
@@ -102,7 +103,7 @@ epsfA:=function(inpdata)
 				for f2 in ElF do
 					for h in ElH do
 						test:=(eps(h,f1*f2)=eps(h,f1)*eps(h,f2)*3cocl(omegam,h,f1,f2));
-						if test=false then return false; fi; #Print([false,2,h,f1,f2],"om"); return false; fi;
+						if test=false then return false; fi; #Print([false,2,h,f1,f2],"om") return false fi
 					od;
 				od;
 			od;
@@ -124,9 +125,9 @@ epsfA:=function(inpdata)
 	od;
 				
 	if IsEqualSet(ElH,ElF) then
-		#eps from gamma solves the epsilon relations when d(gamma)=omega|F (TwinAlgebras.tex App. A), not re-tested: if epstest(function(f1,f2) return epsFF[Position(ElF,f1)][Position(ElF,f2)]; end) then
+		#eps from gamma solves the epsilon relations when d(gamma)=omega|F (arXiv:2605.31602 App. A), not re-tested here
 			return [function(f1,f2) return epsFF[Position(ElF,f1)][Position(ElF,f2)]; end];
-		#else ErrorNoReturn("ERROR in Lag eps"); return fail; fi;
+		#else ErrorNoReturn("ERROR in Lag eps") return fail fi
 	else
 		chtabF:=CharacterTable(F);
 		clF:=ConjugacyClasses(chtabF);
@@ -177,7 +178,7 @@ epsfA:=function(inpdata)
 				if sol=fail then return fail; fi;
 				Add(kh,List(sol,x->E(DenominatorRat(x))^NumeratorRat(x)));
 				#kh solves the projective equation: SolveModZ stops with an error otherwise, not re-tested:
-				#khn:=Last(kh); if ForAny([1..Length(ElF)],n1->ForAny([1..Length(ElF)],n2-> khn[n1]*khn[n2]/khn[Position(ElF,ElF[n1]*ElF[n2])]<>beta[n1][n2])) then ErrorNoReturn("epsf: solver returned a non-solution for the projective character"); fi;
+				#khn:=Last(kh) if ForAny([1..Length(ElF)],n1->ForAny([1..Length(ElF)],n2-> khn[n1]*khn[n2]/khn[Position(ElF,ElF[n1]*ElF[n2])]<>beta[n1][n2])) then ErrorNoReturn("epsf: solver returned a non-solution for the projective character") fi
 			od;
 			tocart:=[];
 			for n in [1..Length(genHnotF)] do
@@ -262,7 +263,7 @@ end;
 
 #epsf: the solutions eps of the epsilon relations, one per gauge class eps->eps*c(^h f)/c(f), c in Lin(F)
 #in: [H,F,gamma] or [H,F,gamma,omega], F normal in H, gamma a normalized trivialization of omega|F, omega=rec(a,N)
-#out: the list of eps(h,f) (from epsfA for abelian H); fail or [] when there is none
+#out: the list of eps(h,f) (from epsfA for abelian H), fail or [] when there is none
 epsf:=function(inpdata)
 	local H,F,gamma,omega,omegam,Uom,g1,g2,g3,ElF,Ugamma,ElD,ElH,epstest,epsFF,epsFFt,f1,f2,chtabF,clF,chF,genH,genHnotF,h,poss,poss1,kh,beta,betat,Mv,n1,n2,t,Herm,Hermt,v,sol,tocart,lb,mtoa,r,roots,rootData,n,epstabs,epstab,p,setvalh1h2,h1,h2,known,i,f,epssols,AreEquivEps,irr,epsnums,TestEquiv,test,j1,j2,epsnumsfinal,epsfinal,khn;
 	H:=inpdata[1];
@@ -278,7 +279,7 @@ epsf:=function(inpdata)
 		ErrorNoReturn("epsf: F must be normal in H");
 	fi;
 	if not IsFunction(gamma) then ErrorNoReturn("epsf: gamma must be a function"); fi;
-	#gamma is assumed to be a normalized trivialization of omega|F (omega=1 for 3-argument input), as returned by gammaf (correct by construction). For a gamma from another source call GammaTest(inpdata) first.
+	#gamma is assumed to be a normalized trivialization of omega|F (omega=1 for 3-argument input), as returned by gammaf (correct by construction). For a gamma from another source call GammaTest(inpdata) first
 	ElF:=Elements(F);
 	if ElF=[One(F)] then
 		return [function(h,f) return 1; end];  
@@ -289,7 +290,7 @@ epsf:=function(inpdata)
 	ElH:=Concatenation(ElF,ElD);
 	if not IsBound(Uom) then
 		omegam:=function(g1,g2,g3) return E(omega.N)^(omega.a(g1,g2,g3)); end;
-		#only Uom=[1] (omega|H identically 0) is tested below; ForAll stops at the first nonzero value
+		#only Uom=[1] (omega|H identically 0) is tested below, ForAll stops at the first nonzero value
 		if ForAll(ElH,g1->ForAll(ElH,g2->ForAll(ElH,g3->omega.a(g1,g2,g3) mod omega.N=0))) then
 			Uom:=[1];
 		else
@@ -305,7 +306,7 @@ epsf:=function(inpdata)
 				for h2 in ElH do
 					for f in ElF do
 						test:=(eps(h1*h2,f)=eps(h1,h2*f*Inverse(h2))*eps(h2,f));
-						if test=false then return false; fi; #Print([false,1,h1,h2,f]); return false; fi;
+						if test=false then return false; fi; #Print([false,1,h1,h2,f]) return false fi
 					od;
 				od;
 			od;
@@ -313,7 +314,7 @@ epsf:=function(inpdata)
 				for f2 in ElF do
 					for h in ElH do
 						test:=(gamma(f1,f2)*eps(h,f1*f2)=eps(h,f1)*eps(h,f2)*gamma(h*f1*Inverse(h),h*f2*Inverse(h)));
-						if test=false then return false; fi; #Print([false,2,f1,f2,h]); return false; fi;
+						if test=false then return false; fi; #Print([false,2,f1,f2,h]) return false fi
 					od;
 				od;
 			od;
@@ -322,7 +323,7 @@ epsf:=function(inpdata)
 				for h2 in ElH do
 					for f in ElF do
 						test:=(eps(h1*h2,f)=eps(h1,h2*f*Inverse(h2))*eps(h2,f)*3cocr(omegam,h1,h2,f));
-						if test=false then return false; fi; #Print([false,1,h1,h2,f],"om"); return false; fi;
+						if test=false then return false; fi; #Print([false,1,h1,h2,f],"om") return false fi
 					od;
 				od;
 			od;
@@ -330,7 +331,7 @@ epsf:=function(inpdata)
 				for f2 in ElF do
 					for h in ElH do
 						test:=(gamma(f1,f2)*eps(h,f1*f2)=eps(h,f1)*eps(h,f2)*gamma(h*f1*Inverse(h),h*f2*Inverse(h))*3cocl(omegam,h,f1,f2));
-						if test=false then return false; fi; #Print([false,2,h,f1,f2],"om"); return false; fi;
+						if test=false then return false; fi; #Print([false,2,h,f1,f2],"om") return false fi
 					od;
 				od;
 			od;
@@ -352,9 +353,9 @@ epsf:=function(inpdata)
 	od;
 				
 	if IsEqualSet(ElH,ElF) then
-		#eps from gamma solves the epsilon relations when d(gamma)=omega|F (TwinAlgebras.tex App. A), not re-tested: if epstest(function(f1,f2) return epsFF[Position(ElF,f1)][Position(ElF,f2)]; end) then
+		#eps from gamma solves the epsilon relations when d(gamma)=omega|F (arXiv:2605.31602 App. A), not re-tested here
 			return [function(f1,f2) return epsFF[Position(ElF,f1)][Position(ElF,f2)]; end];
-		#else ErrorNoReturn("ERROR in Lag eps"); return fail; fi;
+		#else ErrorNoReturn("ERROR in Lag eps") return fail fi
 	else
 		chtabF:=CharacterTable(F);
 		clF:=ConjugacyClasses(chtabF);
@@ -414,7 +415,7 @@ epsf:=function(inpdata)
 				if sol=fail then return fail; fi;
 				Add(kh,List(sol,x->E(DenominatorRat(x))^NumeratorRat(x)));
 				#kh solves the projective equation: SolveModZ stops with an error otherwise, not re-tested:
-				#khn:=Last(kh); if ForAny([1..Length(ElF)],n1->ForAny([1..Length(ElF)],n2-> khn[n1]*khn[n2]/khn[Position(ElF,ElF[n1]*ElF[n2])]<>beta[n1][n2])) then ErrorNoReturn("epsf: solver returned a non-solution for the projective character"); fi;
+				#khn:=Last(kh) if ForAny([1..Length(ElF)],n1->ForAny([1..Length(ElF)],n2-> khn[n1]*khn[n2]/khn[Position(ElF,ElF[n1]*ElF[n2])]<>beta[n1][n2])) then ErrorNoReturn("epsf: solver returned a non-solution for the projective character") fi
 			od;
 			tocart:=[];
 			for n in [1..Length(genHnotF)] do
@@ -755,7 +756,7 @@ ShowFgammagl:=function(F,gamma,gl)
 end;
 
 
-#TeXGroupName: a group name in the notation of TwinAlgebras.tex
+#TeXGroupName: a group name in the notation of arXiv:2605.31602
 #in: s a string of StructureDescription, e.g. "C2 x C2", "C3 : C4"
 #out: the LaTeX string, e.g. "\Z_{2} \times \Z_{2}", "\Z_{3} \rtimes \Z_{4}" (other names unchanged)
 TeXGroupName:=function(s)
@@ -787,7 +788,7 @@ end;
 
 #TeXLabel: a group-element or anyon label in LaTeX (math mode)
 #in: s a label of MakeGroupLabels or AnyonLabelStrings, e.g. "([f2],1 f3=E(8)^5)", "1*e1"
-#out: the LaTeX string, e.g. "([f_{2}],1\;f_{3}=\zeta_{8}^{5})", "e_{1}"
+#out: the LaTeX string, e.g. "([f_{2}],1\,f_{3}=\zeta_{8}^{5})", "e_{1}"
 TeXLabel:=function(s)
 	local out,i,j,fac;
 	if '*' in s then
@@ -874,7 +875,7 @@ AlgebraDisplayData:=function(arg)
 		if r.na[i]=1 then return labTeX[i]; fi;
 		return Concatenation(String(r.na[i]),labTeX[i]);
 	end)," \\oplus ");
-	#reduced topological order (TwinAlgebras.tex Thm DS-reducedTO)
+	#reduced topological order (arXiv:2605.31602 Thm DS-reducedTO)
 	al:=fail;
 	if IsBound(opts.reducedTO) and opts.reducedTO=false then
 		#skipped
@@ -925,7 +926,7 @@ AlgebraDisplayData:=function(arg)
 			ElK:=al[2]; ala:=al[3];
 		fi;
 		if H=G and Order(N)=1 and IsBound(th.om) then
-			#alpha=omega on G/1=G; th.om is stored as omega itself (not its bar)
+			#alpha=omega on G/1=G, th.om is stored as omega itself (not its bar)
 			for k1 in ElG do for k2 in ElG do for k3 in ElG do
 				if th.om.a(k1,k2,k3) mod th.om.N<>0 then
 					Add(r.alpha,Concatenation("alpha(",gl(k1),",",gl(k2),",",gl(k3),")=",String(E(th.om.N)^th.om.a(k1,k2,k3))));

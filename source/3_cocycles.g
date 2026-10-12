@@ -1,8 +1,9 @@
+## https://github.com/AlisonWarman/AlgebrasTQD
 #############################################################################
 ##
 ## source/3_cocycles.g                 AlgebrasTQD
 ##
-## Cocycle construction, validation, and trivialization.
+## Cocycle construction, validation, and trivialization
 ##
 ## Functions in this file (the first line of each header):
 ## - ftriv: the trivial multiplicative 2-cochain
@@ -43,12 +44,12 @@ ftriv:=function(g1,g2) return 1; end;
 omtriv:=rec(a:=function(g1,g2,g3) return 0; end, N:=1);
 #igomf: the 2-cocycle theta_g of the g-twisted sector on the centralizer of g, obtained from a 3-cocycle
 #in: om=rec(a,N) an additive 3-cocycle and g a group element
-#out: the function (g1,g2)->root of unity; for g1,g2 in C_G(g) it is Gruen-Morrison's theta_g(g1,g2), elsewhere it is not a 2-cocycle (the conjugates of g in theta are replaced by g)
+#out: the function (g1,g2)->root of unity, for g1,g2 in C_G(g) it is Gruen-Morrison's theta_g(g1,g2), elsewhere it is not a 2-cocycle (the conjugates of g in theta are replaced by g)
 igomf:=function(om, g)
     local igom,g1,g2;
     igom := function(g1, g2)
         return E(om.N)^(om.a(g,g1,g2)+om.a(g1,g2,g)-om.a(g1,g,g2));
-			#omega(g, h, k) + omega(h, k, g) - omega(h, g, k);
+			#omega(g, h, k) + omega(h, k, g) - omega(h, g, k)
     end;
 	return igom;
 end;
@@ -78,7 +79,7 @@ end;
 
 #3coctest: tests whether an additive 3-cochain is a normalized 3-cocycle (for cocycles not from omf or omaut)
 #in: [El,om] with El the elements of a group and om=rec(a,N) additive
-#out: true or false; warns when om is a 3-cocycle but not normalized (see NormalizeCocycle)
+#out: true or false, warns when om is a 3-cocycle but not normalized (see NormalizeCocycle)
 3coctest:=function(inp)
 	local El,om,g1,g2,g3,g4;
 	El:=inp[1];
@@ -89,7 +90,7 @@ end;
 		fi;
 	od; od; od; od; 
 	if not IsNormalizedCocycle(El,om) then
-		Info(InfoWarning,1,"3coctest: om is a 3-cocycle but not normalized; NormalizeCocycle(G,om) gives a cohomologous normalized one");
+		Info(InfoWarning,1,"3coctest: om is a 3-cocycle but not normalized. NormalizeCocycle(G,om) gives a cohomologous normalized one");
 		return false;
 	fi;
 	return true;
@@ -98,7 +99,7 @@ end;
 
 #UCTInvariants: HAP's UCT record of TR in degree n and the invariant factors of its cocycle basis
 #in: TR=TensorWithIntegers(R), R a resolution of a finite group, and n=2 or 3
-#out: [UCT,Homol] (Smith form; Homology can give primary factors, Mignard-Schauenburg Rem. 2.4); not for the trivial group
+#out: [UCT,Homol] (Smith form, Homology can give primary factors, Mignard-Schauenburg Rem. 2.4), not for the trivial group
 UCTInvariants:=function(TR,n)
 	local UCT;
 	UCT:=UniversalCoefficientsTheorem(TR,n);
@@ -107,7 +108,7 @@ end;
 
 #omf: representatives of H^3(F,U(1))
 #in: F a finite group
-#out: a list of records rec(a,N,G:=F), one normalized additive 3-cocycle per class (all |H^3| classes: for C2^5, 2^25; use omaut or H3Cocycle)
+#out: a list of records rec(a,N,G:=F), one normalized additive 3-cocycle per class (all |H^3| classes: for C2^5, 2^25, use omaut or H3Cocycle)
 omf:=function(F)
 	local R,TR,Homol,UCT,N,sols,3coc,coeffs,coeff,g1,g2,g3,tt,ElF,
 		ftabs,ftabt,ftabtt,ftab,i,tables,table,makecoc,result;
@@ -344,10 +345,10 @@ GammaTrivialization:=function(F,omega)
 	pos:=NewDictionary(one,true);
 	for i in [1..m] do AddDictionary(pos,El1[i],i); od;
 	pairIdx:=function(a,b) return (LookupDictionary(pos,a)-1)*m+LookupDictionary(pos,b); end;
-	#d(gamma)=omega on (g1,g2,s), s in a generating set S, implies it on F^3 (omega a normalized 3-cocycle); the triples with an entry 1 hold automatically
+	#d(gamma)=omega on (g1,g2,s), s in a generating set S, implies it on F^3 (omega a normalized 3-cocycle), the triples with an entry 1 hold automatically
 	S:=Filtered(SmallGeneratingSet(F),s->s<>one);
 	rows:=[]; rhs:=[];
-	#gamma(g2,s)gamma(g1,g2s)=gamma(g1g2,s)gamma(g1,g2)omega(g1,g2,s), exponents in full turns; a term with an entry 1 is 0
+	#gamma(g2,s)gamma(g1,g2s)=gamma(g1g2,s)gamma(g1,g2)omega(g1,g2,s), exponents in full turns, a term with an entry 1 is 0
 	for g1 in El1 do for g2 in El1 do for s in S do
 		t:=ListWithIdenticalEntries(m^2,0);
 		t[pairIdx(g2,s)]:=t[pairIdx(g2,s)]+1;
@@ -356,7 +357,7 @@ GammaTrivialization:=function(F,omega)
 		t[pairIdx(g1,g2)]:=t[pairIdx(g1,g2)]-1;
 		Add(rows,t); Add(rhs,omega.a(g1,g2,s)/omega.N);
 	od; od; od;
-	#exact Hermite-normal-form solver (D=omega.N); fail means omega|F is not a coboundary
+	#exact Hermite-normal-form solver (D=omega.N), fail means omega|F is not a coboundary
 	x:=SolveModZ(rows,rhs,omega.N);
 	if x=fail then
 		return fail;
@@ -477,7 +478,7 @@ end;
 
 #Nice3coc: regauges omega so that every gamma of the algebras is a genuine 2-cocycle
 #in: [CAG,om] or [CAG,om,"stop"] with CAG a list of algebras and om=rec(a,N) additive ("stop": one regauging step only)
-#out: [CAG,om] regauged (with "stop": that step's output); errors if the iteration cycles or does not converge
+#out: [CAG,om] regauged (with "stop": that step's output), errors if the iteration cycles or does not converge
 Nice3coc:=function(inp)
 	local oneiter,nit,inpt,inpnew,seen,key;
 	#one iteration
@@ -646,13 +647,13 @@ end;
 
 #H3Cocycle: the additive 3-cocycle of a class of H^3(G,U(1)) given by its coordinates
 #in: G a finite group and v a list with one integer per H3Invariants(G) (v=0 or [] trivial), or rec(a,N[,G]) (returned untested)
-#out: rec(a,N,G) additive, the table of omf(G)[k] for the k with coefficient vector v; error if v.G is another group object
+#out: rec(a,N,G) additive, the table of omf(G)[k] for the k with coefficient vector v, error if v.G is another group object
 H3Cocycle:=function(G,v)
 	local R,TR,Homol,UCT,N,ElG,pos,cocs,tab,om,i;
 	if IsRecord(v) then
 		#the tables are indexed by the elements of v.G: a copy of G (e.g. SmallGroup called again) does not work
 		if IsBound(v.G) and not IsIdenticalObj(v.G,G) then
-			ErrorNoReturn("H3Cocycle: omega was built on another copy of the group; build it from this G, e.g. omaut(MakeGroup(...))");
+			ErrorNoReturn("H3Cocycle: omega was built on another copy of the group. Build it from this G, e.g. omaut(MakeGroup(...))");
 		fi;
 		return v;
 	fi;
@@ -690,8 +691,8 @@ H3Cocycle:=function(G,v)
 end;
 
 #TQDTheory: the data of Z(Vec_G^omega) used by the other routines, computed once
-#in: (G[,v[,opts]]), v as in H3Cocycle (default trivial), opts optional fields ST:=true (S,T matrices; data:=true too), glG, bos:=true
-#out: rec(G,glG,aG,labels,H3,[om],[S,T]); om bound only for a nontrivial cocycle, S and T only with ST:=true
+#in: (G[,v[,opts]]), v as in H3Cocycle (default trivial), opts optional fields ST:=true (S,T matrices, data:=true too), glG, bos:=true
+#out: rec(G,glG,aG,labels,H3,[om],[S,T]), om bound only for a nontrivial cocycle, S and T only with ST:=true
 TQDTheory:=function(arg)
 	local G,v,opts,th,inp,res,ElG;
 	G:=MakeGroup(arg[1]);
