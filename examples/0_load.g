@@ -12,7 +12,7 @@
 Read(ReplacedString(INPUT_FILENAME(), "0_load.g", "../AlgebrasTQD.g"));
 
 functions := [ "MakeGroup", "MakeGroupLabels", "RelabelGroup", "GroupElement",
-               "GroupLabel", "ShowGroup", "TQDTheory", "Fusion", "ShowFusion", "ShowAnyons",
+               "GroupLabel", "ShowGroup", "TQDTheory", "GaugeableSubgroups", "Fusion", "ShowFusion", "ShowAnyons",
                "AlgebrasWithAnyons", "ShowAlgebrasWithAnyons", "AlgebraClasses",
                "Hasse", "PhaseLabels", "InterfaceMap", "RoughMergeSplitStep",
                "RoughMergeSplit", "SPTStackingGate" ];;
