@@ -46,11 +46,22 @@ k := First([1..n], i -> d[i] = 3 and th.T[i][i] = 1);;
 Print(th.labels[k], " x ", th.labels[k], " = ", Fusion(th, k, k), "\n\n");
 
 #----------------------------------------------------------------------------
-# 3. D8 relabelled as in arXiv:2412.15024: D8 = (Z2^a x Z2^b) : Z2^c = {1,a,b,ab,c,ca,cb,cab}, cac = b, cbc = a. From MakeGroup's r, s: c = s, a = sr, b = sr^3 = cac (c first, so it is written on the left)
+# 3. D8 in the two notations of the literature: MakeGroup's rotation r and reflection s (as in arXiv:2512.13777), and D8 = (Z2^a x Z2^b) : Z2^c = {1,a,b,ab,c,ca,cb,cab}, cac = b, cbc = a, as in arXiv:2412.15024 and arXiv:2403.00905, with c = s, a = sr, b = sr^3 = cac (c first, so it is written on the left). Relabelling renames the elements of the same group object
+
+Section("D8 with the generators r, s");
+D8 := MakeGroup("D8");;
+ShowGroup(D8);
+glrs := MakeGroupLabels([D8]);;
 
 Section("D8 with the generators c, a, b");
-D8 := MakeGroup("D8", ["c","a","b"], ["s","sr","sr^3"]);;
+RelabelGroup(D8, ["c","a","b"], ["s","sr","sr^3"]);;
 ShowGroup(D8);
+glcab := MakeGroupLabels([D8]);;
+# The same element in the two notations
+for g in glrs[1] do
+    Print(glrs[2][Position(glrs[1], g)], " = ", glcab[2][Position(glcab[1], g)], "   ");
+od;
+Print("\n");
 # The elements can be typed in the new labels:
 c := GroupElement(D8, "c");; a := GroupElement(D8, "a");; b := GroupElement(D8, "b");;
 Print("cac = ", GroupLabel(D8, c*a*c), ",  cbc = ", GroupLabel(D8, c*b*c), "\n");

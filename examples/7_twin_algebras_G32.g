@@ -40,7 +40,7 @@ g1 := GroupElement(G,"g1");; g2 := GroupElement(G,"g2");; g3 := GroupElement(G,"
 classWords := [ "1", "g1g2g3", "g2g3", "g3", "g1^2", "g1^4", "g1", "g1g2", "g2", "g3g1^2", "g1g3" ];;
 classReps := List(classWords, w -> GroupElement(G,w));;
 if Length(Set(classReps, g -> ConjugacyClass(G,g)))<>Length(ConjugacyClasses(G)) then
-    ErrorNoReturn("The classes of Table tab:G3243chars are not all the conjugacy classes of G");
+    ErrorNoReturn("The classes of the character table of G_32 in arXiv:2605.31602 are not all the conjugacy classes of G");
 fi;
 paperChars := [
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1 ],
@@ -62,7 +62,7 @@ IrrepLabels := function(th, show)
     for i in Filtered([1..Length(th.aG)], i -> IsOne(th.aG[i][1])) do
         ch := List(classReps, g -> LookupDictionary(th.aG[i][2], g));
         n := Position(paperChars, ch);
-        if n=fail then ErrorNoReturn("The character ", ch, " of ", th.labels[i], " is not in Table tab:G3243chars"); fi;
+        if n=fail then ErrorNoReturn("The character ", ch, " of ", th.labels[i], " is not in the character table of G_32 in arXiv:2605.31602"); fi;
         if show then Print(String(th.labels[i], -26), " = ", paperLabels[n], "\n"); fi;
         labels[i] := paperLabels[n];
     od;
@@ -74,12 +74,13 @@ ShowTwins := function(th, M)
     local k, i;
     Print(Length(M.classes), " algebra classes, ", Length(M.twins), " twin pairs\n");
     for k in [1..Length(M.twins)] do
-        Print("\nTwin pair ", k, ", inequivalent since ", M.reasons[k][2], ":\n");
+        Print("\nTwin pair ", k, ", inequivalent since ",
+              First(M.reasons, x -> Set(x[1]) = Set(M.twins[k]))[2], ":\n");
         for i in M.twins[k] do ShowAlgData(th, M.classes[i], rec(opP := "short"));; od;
     od;
 end;;
 
-Section("Irreps of G_32 matched to Table tab:G3243chars");
+Section("Irreps of G_32 matched to the character table of arXiv:2605.31602");
 th := TQDTheory(G);;
 th.labels := IrrepLabels(th, true);;
 
@@ -208,6 +209,6 @@ if AskExample7("Run twin sweep?") then
         od;
     end;;
 
-    Section("Twin algebras in Z(Vec_G), the sweep of Table tab:twins_sweep_no_omega");
+    Section("Twin algebras in Z(Vec_G), the sweep of the table of twins of arXiv:2605.31602");
     for id in sweepIds do SweepGroup(id); od;
 fi;

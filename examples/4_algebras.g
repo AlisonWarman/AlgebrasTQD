@@ -3,7 +3,7 @@
 ##
 ##  4_algebras.g                                     AlgebrasTQD examples
 ##
-##  Condensable algebras A(H,N,gamma,eps) of the toric code, double semion, the type-II twisted double of C2 x C2, D(S3), and D(D8). Show their anyon content, algebra filters, selected algebras in detail, and LaTeX output. Usage, from any directory: Read("path/to/AlgebrasTQD/examples/4_algebras.g")
+##  Condensable algebras A(H,N,gamma,eps) of the toric code, double semion, the type-II twisted double of C2 x C2, D(S3), the type-III twisted double of Z2^3 in the R, G, B labels, and D(D8) through its equivalence with the latter, with an autoequivalence on both sides. Show their anyon content, algebra filters, selected algebras in detail, and LaTeX output. Usage, from any directory: Read("path/to/AlgebrasTQD/examples/4_algebras.g")
 ##
 ##  GAP does not fix the order of conjugacy classes, characters, anyons or subgroups, so algebras are found here by their properties, not by position
 ##
@@ -95,23 +95,157 @@ r := AlgebraDisplayData(th, First(L, r -> Size(r.H) = 6 and Size(r.F) = 3).A);;
 Print(r.nameTeX, "\n", r.decompositionTeX, "\n", r.reducedTOTeX, "\n");
 
 #----------------------------------------------------------------------------
-# 8. List the algebras of D(D8) with their anyon content, as for D(S3)
+# 8. Z2^3 with the type-III 3-cocycle omega(g1,g2,g3) = (-1)^(r1 g2 b3), for g = R^r G^g B^b. Its anyons are labelled as in arXiv:2403.00905 and arXiv:2512.13777: 1 and the charges e_C, the fluxes m_C (bosons) and f_C (fermions), and the semions s_RGB, sbar_RGB, with C a set of colours R, G, B
 
-Section("The algebras of D(D8)");
-D8 := MakeGroup("D8");;
-thD8 := TQDTheory(D8);;
-LD8 := AlgebrasWithAnyons(thD8);;
-ShowAlgebrasWithAnyons(LD8);
-
-Section("Lagrangian algebras of D(D8)");
-for A in TQDAlgebras(thD8, rec(Lag := true)) do Print("  ", AlgebraName(A, thD8.glG), "\n"); od;
-
-Section("A D8 algebra with its central subgroup in detail");
-rD8 := First(LD8, r -> r.H = D8 and r.F = Center(D8));;
-ShowAlgData(thD8, rD8.A);;
+Section("Z2^3 with the type-III 3-cocycle: anyons in the R, G, B labels");
+Z2c := MakeGroup("C2 x C2 x C2");;
+RelabelGroup(Z2c, ["R","G","B"], ["a","b","c"]);;
+R := GroupElement(Z2c, "R");; G := GroupElement(Z2c, "G");; B := GroupElement(Z2c, "B");;
+#rgb: the exponents [r,g,b] of an element R^r G^g B^b of Z2^3
+rgb := x -> First(Cartesian([0,1],[0,1],[0,1]), e -> R^e[1]*G^e[2]*B^e[3] = x);;
+omIII := rec(a := function(g1,g2,g3) return rgb(g1)[1]*rgb(g2)[2]*rgb(g3)[3] mod 2; end, N := 2);;
+if 3coctest([Elements(Z2c), omIII]) <> true then
+    ErrorNoReturn("omega_III is not a normalized 3-cocycle");
+fi;
+thIII := TQDTheory(Z2c, omIII, rec(ST := true));;
+#RGBLabel: the label of an anyon of Z(Vec_{Z2^3}^omega_III): a charge by the colours on which its character is -1, a flux by its colours and its spin
+#in: an anyon [g,character,class,label] of thIII.aG
+#out: a string such as "e_RG", "m_B", "f_GB" or "s_RGB"
+RGBLabel := function(an)
+    local colours, spin;
+    colours := v -> Concatenation(List(Filtered([1..3], i -> v[i] = 1), i -> ["R","G","B"][i]));
+    if IsOne(an[1]) then
+        if ForAll([R,G,B], g -> LookupDictionary(an[2], g) = 1) then return "1"; fi;
+        return Concatenation("e_", colours(List([R,G,B], g -> (1 - LookupDictionary(an[2], g))/2)));
+    fi;
+    spin := LookupDictionary(an[2], an[1])/LookupDictionary(an[2], One(Z2c));
+    if an[1] = R*G*B then
+        if spin = E(4) then return "s_RGB"; fi;
+        return "sbar_RGB";
+    fi;
+    if spin = 1 then return Concatenation("m_", colours(rgb(an[1]))); fi;
+    return Concatenation("f_", colours(rgb(an[1])));
+end;;
+thIII.labels := List(thIII.aG, RGBLabel);;
+if Length(Set(thIII.labels)) <> Length(thIII.labels) then
+    ErrorNoReturn("the R, G, B labels are not distinct");
+fi;
+ShowAnyons(thIII);
 
 #----------------------------------------------------------------------------
-# 9. The number of algebras for every twist of D8, one per orbit of H^3(D8,U(1)) under the automorphisms of D8 (sorted, since the orbits come in no fixed order)
+# 9. The algebras of Z(Vec_{Z2^3}^omega_III). AlgebraData gives several data for one algebra, related by the conjugation phases Omega_g of the twist, and AlgebraClasses sorts them into the 38 classes, 11 of them Lagrangian, of arXiv:2403.00905
+
+Section("The algebras of Z(Vec_{Z2^3}^omega_III)");
+MIII := AlgebraClasses(thIII);;
+Print(Length(TQDAlgebras(thIII)), " algebra data, ", Length(MIII.classes), " classes, ",
+      Number(MIII.classes, c -> c.dim = 8), " Lagrangian\n");
+for c in MIII.classes do
+    Print("dim=", c.dim, "  ", c.name, "  ", ShowAlg(c.na, thIII.labels), "\n");
+od;
+
+#----------------------------------------------------------------------------
+# 10. The braided equivalence Z(Vec_{Z2^3}^omega_III) = D(D8): the Lagrangian algebra A(K,K,gamma,eps) of Z(Vec_{Z2^3}^omega_III) x bar D(D8), K = <G, RB r, R s, B rs>, decomposes as sum_a a x bar phi(a) with phi a permutation of the anyons, the dictionary of arXiv:2512.13777. D8 has the generators r of order 4 and s of order 2 of MakeGroup("D8"), as in that paper
+
+Section("The equivalence Z(Vec_{Z2^3}^omega_III) = D(D8) and the anyons of D(D8) in R, G, B labels");
+D8 := MakeGroup("D8");;
+r := GroupElement(D8, "r");; s := GroupElement(D8, "s");;
+if Order(r) <> 4 or Order(s) <> 2 or s*r*s <> r^-1 then
+    ErrorNoReturn("r and s do not present D8 as expected");
+fi;
+thD8 := TQDTheory(D8, 0, rec(ST := true));;
+ZD := DirectProduct(Z2c, D8);;
+eZ := Embedding(ZD, 1);; eD := Embedding(ZD, 2);; pZ := Projection(ZD, 1);; pD := Projection(ZD, 2);;
+K := Group(eZ(G), eZ(R*B)*eD(r), eZ(R)*eD(s), eZ(B)*eD(r*s));;
+omZD := rec(a := function(g1,g2,g3) return omIII.a(pZ(g1),pZ(g2),pZ(g3)); end, N := 2);;
+gammaK := gammaf([K, omZD])[1];;
+epsK := epsf([K, K, gammaK, omZD])[1];;
+res := AlgAnyonsProducts(rec(A := [K,K,gammaK,epsK,ZD], ps := [pZ,pD], es := [eZ,eD],
+    aGs := [thIII.aG, thD8.aG], stars := ["","*"], om := omZD));;
+#phi: one row per anyon of D(D8), with a 1 at its image in Z(Vec_{Z2^3}^omega_III)
+phi := TransposedMat(Reshape(res[2], Length(thD8.aG)));;
+if res[1] <> Size(Z2c)*Size(D8) or not ForAll(phi, row -> Sum(row) = 1) or not ForAll(TransposedMat(phi), col -> Sum(col) = 1) then
+    ErrorNoReturn("A(K,K,gamma,eps) is not the Lagrangian algebra of an equivalence");
+fi;
+if phi*thIII.S <> thD8.S*phi or phi*thIII.T <> thD8.T*phi then
+    ErrorNoReturn("the equivalence does not preserve S and T");
+fi;
+for i in [1..Length(phi)] do Print(thD8.labels[i], "  <->  ", ShowAlg(phi[i], thIII.labels), "\n"); od;
+labD8 := List(phi, row -> thIII.labels[Position(row, 1)]);;
+
+Section("The algebras of D(D8) in R, G, B labels");
+LD8 := AlgebrasWithAnyons(thD8);;
+for rr in LD8 do
+    Print("dim=", rr.dim, "  ", rr.name, "  ", ShowAlg(rr.na, labD8), "\n");
+od;
+# the equivalence maps the algebras of D(D8) onto those of Z(Vec_{Z2^3}^omega_III)
+if Set(List(LD8, rr -> rr.na*phi)) <> Set(List(MIII.classes, cl -> cl.na)) then
+    ErrorNoReturn("the algebras of D(D8) and Z(Vec_{Z2^3}^omega_III) do not correspond");
+fi;
+Print("The ", Length(LD8), " algebras of D(D8) match the ", Length(MIII.classes), " classes of the type-III double\n");
+
+Section("A D8 algebra with its central subgroup in detail");
+rD8 := First(LD8, rr -> rr.H = D8 and rr.F = Center(D8));;
+ShowAlgData(thD8, rD8.A);;
+Print("in R, G, B labels: ", ShowAlg(rD8.na, labD8), "\n");
+
+#----------------------------------------------------------------------------
+# 11. An autoequivalence on both sides (arXiv:2512.13777, App. Review of Constant-Depth T-gate): the group automorphism f: (R,G,B) -> (RG,G,GB) of Z2^3, with the 2-cochain gamma = i on (R,B), gives an autoequivalence of Z(Vec_{Z2^3}^omega_III), and the equivalence above maps it to the autoequivalence of D(D8) that stacks the D8 SPT phase of the 2-cocycle alpha
+
+Section("An autoequivalence of Z(Vec_{Z2^3}^omega_III) and the SPT stacking of D(D8)");
+ZZ := DirectProduct(Z2c, Z2c);;
+p1 := Projection(ZZ, 1);; p2 := Projection(ZZ, 2);; e1 := Embedding(ZZ, 1);; e2 := Embedding(ZZ, 2);;
+omZZ := rec(a := function(g1,g2,g3) return (omIII.a(p1(g1),p1(g2),p1(g3)) - omIII.a(p2(g1),p2(g2),p2(g3))) mod 2; end, N := 2);;
+Hf := Group(e1(R)*e2(R*G), e1(G)*e2(G), e1(B)*e2(G*B));;
+gammaf1 := function(g1,g2) if rgb(p2(g1))[1] = 1 and rgb(p2(g2))[3] = 1 then return E(4); fi; return 1; end;;
+if gammatest(Hf, omZZ, gammaf1) <> true then
+    ErrorNoReturn("gamma does not trivialize omega x bar omega on the graph of f");
+fi;
+# gamma is in the class of the second trivialization returned by gammaf
+if IsTrivial2coc([Elements(Hf), function(g1,g2) return gammaf([Hf,omZZ])[2](g1,g2)/gammaf1(g1,g2); end]) = fail then
+    ErrorNoReturn("gamma is not in the class of gammaf([Hf,omZZ])[2]");
+fi;
+epsf1 := epsf([Hf, Hf, gammaf1, omZZ])[1];;
+resf := AlgAnyonsProducts(rec(A := [Hf,Hf,gammaf1,epsf1,ZZ], ps := [p1,p2], es := [e1,e2],
+    aGs := [thIII.aG, thIII.aG], stars := ["","*"], om := omZZ));;
+autIII := Reshape(resf[2], Length(thIII.aG));;
+# alpha: the nontrivial class of H^2(D8,U(1)) as alpha1 times the coboundary of the counterterm kappa on <r>, for g = r^k s^j
+rs := x -> First(Cartesian([0..3],[0,1]), e -> r^e[1]*s^e[2] = x);;
+alpha1 := function(g1,g2) if (rs(g1)[1] + (1 - 2*rs(g1)[2])*rs(g2)[1]) mod 8 >= 4 then return -1; fi; return 1; end;;
+kappa := function(g) if g = r^2 then return -E(4); elif g = r^3 then return -1; fi; return 1; end;;
+alpha := function(g1,g2) return alpha1(g1,g2)*kappa(g1)*kappa(g2)/kappa(g1*g2); end;;
+if not (alpha1(r^2,r^2) = -1 and alpha1(s,s) = 1 and alpha1(r*s,r*s) = 1) then
+    ErrorNoReturn("unexpected values of alpha1");
+fi;
+# alpha is in the nontrivial class of H^2(D8,U(1)), the second class of gammaf(D8)
+if IsTrivial2coc([Elements(D8), function(g1,g2) return alpha(g1,g2)/gammaf(D8)[2](g1,g2); end]) = fail then
+    ErrorNoReturn("alpha is not in the nontrivial class of H^2(D8,U(1))");
+fi;
+# the identities of Lemma 5.1 of arXiv:2512.13777 for alpha with its counterterm
+if not ForAll(D8, g -> alpha(g,g^-1) = 1) then
+    ErrorNoReturn("alpha(g,g^-1) is not 1 for every g");
+fi;
+if not ForAll(D8, g1 -> ForAll(D8, g2 -> alpha(g1^-1,g2^-1) = alpha(g2,g1)^-1)) then
+    ErrorNoReturn("alpha(g1^-1,g2^-1) is not alpha(g2,g1)^-1 for every g1, g2");
+fi;
+Print("alpha: the nontrivial class of H^2(D8,U(1)), with the identities of Lemma 5.1\n");
+DD := DirectProduct(D8, D8);;
+q1 := Projection(DD, 1);; q2 := Projection(DD, 2);; d1 := Embedding(DD, 1);; d2 := Embedding(DD, 2);;
+Hd := Group(d1(r)*d2(r), d1(s)*d2(s));;
+gammad := function(g1,g2) return alpha(q1(g1),q1(g2)); end;;
+epsd := epsf([Hd, Hd, gammad])[1];;
+resd := AlgAnyonsProducts(rec(A := [Hd,Hd,gammad,epsd,DD], ps := [q1,q2], es := [d1,d2],
+    aGs := [thD8.aG, thD8.aG], stars := ["","*"]));;
+autD8 := Reshape(resd[2], Length(thD8.aG));;
+if phi*autIII*TransposedMat(phi) <> autD8 then
+    ErrorNoReturn("the two autoequivalences do not correspond");
+fi;
+Print("phi f phi^-1 = SPT stacking of alpha on D(D8): true\n");
+for i in [1..Length(autIII)] do
+    if autIII[i][i] <> 1 then Print(thIII.labels[i], "  ->  ", ShowAlg(autIII[i], thIII.labels), "\n"); fi;
+od;
+
+#----------------------------------------------------------------------------
+# 12. The number of algebras for every twist of D8, one per orbit of H^3(D8,U(1)) under the automorphisms of D8 (sorted, since the orbits come in no fixed order)
 
 Section("The number of algebras of every twisted double of D8");
 Print(SortedList(List(omaut(D8), om -> Length(TQDAlgebras(TQDTheory(D8, om))))), "\n");
