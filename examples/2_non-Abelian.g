@@ -3,7 +3,7 @@
 ##
 ##  2_non-Abelian.g		AlgebrasTQD examples
 ##
-##  Build S3 and D8 with labelled generators, then print the anyons and fusion rules of their quantum doubles. Relabel the generators of D8 before constructing its double
+##  Build S3 and D8 with labelled generators, then print the anyons and all fusion rules of D(S3), and the anyons of D(D8). Relabel the generators of D8 before constructing its double
 ##
 ##  Note: GAP does not fix the order of conjugacy classes, characters or anyons, so the order of the printed lines can change from one session to another
 ##
@@ -66,5 +66,5 @@ Print("\n");
 c := GroupElement(D8, "c");; a := GroupElement(D8, "a");; b := GroupElement(D8, "b");;
 Print("cac = ", GroupLabel(D8, c*a*c), ",  cbc = ", GroupLabel(D8, c*b*c), "\n");
 
-Section("The anyons and fusion rules of D(D8)");
-thD8 := ShowTQDTheory(D8);;
+Section("The anyons of D(D8)");
+ShowAnyons(TQDTheory(D8));
