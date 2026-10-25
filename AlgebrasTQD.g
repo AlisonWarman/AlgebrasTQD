@@ -39,6 +39,6 @@ for file in [ "0_Modular_Data_Mignard-Schauenburg-Gruen-Morrison.g",
               "4_algebra_data.g",
               "5_interface_map.g",
               "6_algebra_classes_and_inclusions.g",
-              "7_quantum_information.g" ] do
+              "7_quantum_computing.g" ] do
     Read(Concatenation(AlgebrasTQDRoot, "source/", file));
 od;
