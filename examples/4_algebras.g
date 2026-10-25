@@ -187,63 +187,7 @@ ShowAlgData(thD8, rD8.A);;
 Print("in R, G, B labels: ", ShowAlg(rD8.na, labD8), "\n");
 
 #----------------------------------------------------------------------------
-# 11. An autoequivalence on both sides (arXiv:2512.13777, App. Review of Constant-Depth T-gate): the group automorphism f: (R,G,B) -> (RG,G,GB) of Z2^3, with the 2-cochain gamma = i on (R,B), gives an autoequivalence of Z(Vec_{Z2^3}^omega_III), and the equivalence above maps it to the autoequivalence of D(D8) that stacks the D8 SPT phase of the 2-cocycle alpha
-
-Section("An autoequivalence of Z(Vec_{Z2^3}^omega_III) and the SPT stacking of D(D8)");
-ZZ := DirectProduct(Z2c, Z2c);;
-p1 := Projection(ZZ, 1);; p2 := Projection(ZZ, 2);; e1 := Embedding(ZZ, 1);; e2 := Embedding(ZZ, 2);;
-omZZ := rec(a := function(g1,g2,g3) return (omIII.a(p1(g1),p1(g2),p1(g3)) - omIII.a(p2(g1),p2(g2),p2(g3))) mod 2; end, N := 2);;
-Hf := Group(e1(R)*e2(R*G), e1(G)*e2(G), e1(B)*e2(G*B));;
-gammaf1 := function(g1,g2) if rgb(p2(g1))[1] = 1 and rgb(p2(g2))[3] = 1 then return E(4); fi; return 1; end;;
-if gammatest(Hf, omZZ, gammaf1) <> true then
-    ErrorNoReturn("gamma does not trivialize omega x bar omega on the graph of f");
-fi;
-# gamma is in the class of the second trivialization returned by gammaf
-if IsTrivial2coc([Elements(Hf), function(g1,g2) return gammaf([Hf,omZZ])[2](g1,g2)/gammaf1(g1,g2); end]) = fail then
-    ErrorNoReturn("gamma is not in the class of gammaf([Hf,omZZ])[2]");
-fi;
-epsf1 := epsf([Hf, Hf, gammaf1, omZZ])[1];;
-resf := AlgAnyonsProducts(rec(A := [Hf,Hf,gammaf1,epsf1,ZZ], ps := [p1,p2], es := [e1,e2],
-    aGs := [thIII.aG, thIII.aG], stars := ["","*"], om := omZZ));;
-autIII := Reshape(resf[2], Length(thIII.aG));;
-# alpha: the nontrivial class of H^2(D8,U(1)) as alpha1 times the coboundary of the counterterm kappa on <r>, for g = r^k s^j
-rs := x -> First(Cartesian([0..3],[0,1]), e -> r^e[1]*s^e[2] = x);;
-alpha1 := function(g1,g2) if (rs(g1)[1] + (1 - 2*rs(g1)[2])*rs(g2)[1]) mod 8 >= 4 then return -1; fi; return 1; end;;
-kappa := function(g) if g = r^2 then return -E(4); elif g = r^3 then return -1; fi; return 1; end;;
-alpha := function(g1,g2) return alpha1(g1,g2)*kappa(g1)*kappa(g2)/kappa(g1*g2); end;;
-if not (alpha1(r^2,r^2) = -1 and alpha1(s,s) = 1 and alpha1(r*s,r*s) = 1) then
-    ErrorNoReturn("unexpected values of alpha1");
-fi;
-# alpha is in the nontrivial class of H^2(D8,U(1)), the second class of gammaf(D8)
-if IsTrivial2coc([Elements(D8), function(g1,g2) return alpha(g1,g2)/gammaf(D8)[2](g1,g2); end]) = fail then
-    ErrorNoReturn("alpha is not in the nontrivial class of H^2(D8,U(1))");
-fi;
-# the identities of Lemma 5.1 of arXiv:2512.13777 for alpha with its counterterm
-if not ForAll(D8, g -> alpha(g,g^-1) = 1) then
-    ErrorNoReturn("alpha(g,g^-1) is not 1 for every g");
-fi;
-if not ForAll(D8, g1 -> ForAll(D8, g2 -> alpha(g1^-1,g2^-1) = alpha(g2,g1)^-1)) then
-    ErrorNoReturn("alpha(g1^-1,g2^-1) is not alpha(g2,g1)^-1 for every g1, g2");
-fi;
-Print("alpha: the nontrivial class of H^2(D8,U(1)), with the identities of Lemma 5.1\n");
-DD := DirectProduct(D8, D8);;
-q1 := Projection(DD, 1);; q2 := Projection(DD, 2);; d1 := Embedding(DD, 1);; d2 := Embedding(DD, 2);;
-Hd := Group(d1(r)*d2(r), d1(s)*d2(s));;
-gammad := function(g1,g2) return alpha(q1(g1),q1(g2)); end;;
-epsd := epsf([Hd, Hd, gammad])[1];;
-resd := AlgAnyonsProducts(rec(A := [Hd,Hd,gammad,epsd,DD], ps := [q1,q2], es := [d1,d2],
-    aGs := [thD8.aG, thD8.aG], stars := ["","*"]));;
-autD8 := Reshape(resd[2], Length(thD8.aG));;
-if phi*autIII*TransposedMat(phi) <> autD8 then
-    ErrorNoReturn("the two autoequivalences do not correspond");
-fi;
-Print("phi f phi^-1 = SPT stacking of alpha on D(D8): true\n");
-for i in [1..Length(autIII)] do
-    if autIII[i][i] <> 1 then Print(thIII.labels[i], "  ->  ", ShowAlg(autIII[i], thIII.labels), "\n"); fi;
-od;
-
-#----------------------------------------------------------------------------
-# 12. The number of algebras for every twist of D8, one per orbit of H^3(D8,U(1)) under the automorphisms of D8 (sorted, since the orbits come in no fixed order)
+# 11. The number of algebras for every twist of D8, one per orbit of H^3(D8,U(1)) under the automorphisms of D8 (sorted, since the orbits come in no fixed order)
 
 Section("The number of algebras of every twisted double of D8");
 Print(SortedList(List(omaut(D8), om -> Length(TQDAlgebras(TQDTheory(D8, om))))), "\n");
