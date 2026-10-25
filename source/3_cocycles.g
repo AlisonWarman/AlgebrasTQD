@@ -31,6 +31,7 @@
 ## - H3Cocycle: the additive 3-cocycle of a class of H^3(G,U(1)) given by its coordinates
 ## - TQDTheory: the data of Z(Vec_G^omega) used by the other routines, computed once
 ## - OmegaArgs: the trailing omega argument of the existing list-input routines
+## - GaugeableSubgroups: the subgroups F of G with omega|F a coboundary (the F of the algebras), one per conjugacy class
 ##
 #############################################################################
 
@@ -745,4 +746,26 @@ end;
 OmegaArgs:=function(th)
 	if IsBound(th.om) then return [th.om]; fi;
 	return [];
+end;
+
+#GaugeableSubgroups: the subgroups F of G with omega|F a coboundary (the F of the algebras), one per conjugacy class
+#in: (G[,v]) as for TQDTheory (v coordinates or rec(a,N), default trivial), om=rec(a,N,G) from omf or omaut, or th a record from TQDTheory
+#out: the list of subgroup representatives F, by increasing order, with GammaTrivialization(F,omega)<>fail
+GaugeableSubgroups:=function(arg)
+	local G,om,Fs;
+	if IsRecord(arg[1]) and IsBound(arg[1].a) then
+		if not IsBound(arg[1].G) then ErrorNoReturn("GaugeableSubgroups: give the group, GaugeableSubgroups(G,omega)"); fi;
+		G:=arg[1].G;
+		om:=arg[1];
+	elif IsRecord(arg[1]) then
+		G:=arg[1].G;
+		if IsBound(arg[1].om) then om:=arg[1].om; else om:=0; fi;
+	else
+		G:=MakeGroup(arg[1]);
+		if Length(arg)>1 then om:=arg[2]; else om:=0; fi;
+	fi;
+	om:=H3Cocycle(G,om);
+	Fs:=List(ConjugacyClassesSubgroups(G),Representative);
+	if om.N=1 then return Fs; fi;
+	return Filtered(Fs,F->GammaTrivialization(F,om)<>fail);
 end;
