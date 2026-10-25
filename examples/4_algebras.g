@@ -3,7 +3,7 @@
 ##
 ##  4_algebras.g                                     AlgebrasTQD examples
 ##
-##  Condensable algebras A(H,N,gamma,eps) of the toric code, double semion, the type-II twisted double of C2 x C2, D(S3), the type-III twisted double of Z2^3 in the R, G, B labels, and D(D8) through its equivalence with the latter, with an autoequivalence on both sides. Show their anyon content, algebra filters, selected algebras in detail, and LaTeX output. Usage, from any directory: Read("path/to/AlgebrasTQD/examples/4_algebras.g")
+##  Condensable algebras A(H,N,gamma,eps) of the toric code, double semion, the type-II twisted double of C2 x C2, D(S3), the type-III twisted double of Z2^3 in the R, G, B labels, and D(D8) through its equivalence with the latter. Show their anyon content, algebra filters, selected algebras in detail, and LaTeX output. Usage, from any directory: Read("path/to/AlgebrasTQD/examples/4_algebras.g")
 ##
 ##  GAP does not fix the order of conjugacy classes, characters, anyons or subgroups, so algebras are found here by their properties, not by position
 ##
