@@ -16,9 +16,9 @@
 ## - Hasse: the Hasse diagram of inclusions between the algebra classes of a theory
 ## - DisplayClasses: the classes shown by AlgebraTableTeX and HasseTikz, in display order
 ## - TeXOutput: returns a LaTeX string, after writing it to opts.file when that is given
-## - AlgebraTableTeX: the table of algebras of a theory in the layout of arXiv:2605.31602 (Table tab:G_om)
-## - TwinTableTeX: the table of twin algebras of a theory in the layout of arXiv:2605.31602 (Table tab:twinsG32-43)
-## - HasseTikz: the Hasse diagram of a theory as a tikz picture in the layout of arXiv:2605.31602 (Figure fig:Hasse3243_om)
+## - AlgebraTableTeX: the table of algebras of a theory in the layout of the algebra tables of arXiv:2605.31602
+## - TwinTableTeX: the table of twin algebras of a theory in the layout of the twin table of arXiv:2605.31602
+## - HasseTikz: the Hasse diagram of a theory as a tikz picture in the layout of the Hasse diagrams of arXiv:2605.31602
 ## - HasseTableTeX: the linked Hasse diagram and algebra table from one class selection
 ## - HasseEntryTeX: the LaTeX entry of one algebra of a Hasse diagram, as in the table of AlgebraTableTeX
 ## - PhaseLabels: the gapped-phase name of every algebra class, relative to a chosen symmetry boundary
@@ -239,7 +239,7 @@ equivclasses[Posinlist(equivclasses,p[1])]:=Union([Concatenation(equivclasses[Po
 		toret:=[List(twinsrepr,c->List(c,x->CAG[x])),List(List(twinsrepr,c->Position(List(reasonsineq,x->x[1]),c)),y->reasonsineq[y][2])];
 		if op="twins" then return [toret,aG,glG]; fi;
 		#op="" return algebra classes with no reasons (e.g. for IsSubalgebra)
-		if op="" then return [List(classes,c->List(c,x->CAG[x])),List(twinsrepr,x->[Posinlist(classes,x[1]),Posinlist(classes,x[2])]),DuplicateFreeList(List(reasonsineq,x->[[Posinlist(classes,x[1][1]),Posinlist(classes,x[1][2])],x[2]])),List(classes,c->Last(As[c[1]]))]; fi;
+		if op="" then return [List(classes,c->List(c,x->CAG[x])),List(twinsrepr,x->[Posinlist(classes,x[1]),Posinlist(classes,x[2])]),DuplicateFreeList(List(reasonsineq,x->[SortedList([Posinlist(classes,x[1][1]),Posinlist(classes,x[1][2])]),x[2]])),List(classes,c->Last(As[c[1]]))]; fi;
 	fi;
 end;
 
@@ -334,7 +334,7 @@ IsSubalgebra:=function(inp)
 		sol:=inclusiondata(One(G),g,identityFData);
 		if sol<>fail then return Concatenation(sol,[g]); fi;
 	od;
-	#Check every remaining pair before returning a negative answer
+	#Consistency check: no pair with g1<>1 can give inclusion data when every g1=1 failed, so a success here is an error
 	for g1 in Elements(G) do
 		if not IsOne(g1) then
 			FData:=makeFData(g1);
@@ -466,7 +466,7 @@ end;
 #out: the list of phase names, one string per algebra
 HassePhases:=function(inp)#(algs,nsym,HasseLines)
 		local algs,AA,nsym,HasseLines,withi,dims,dimM,paths,nA,phases,t,A,n,ReachableFrom;
-		#SPT/SSB for a Lagrangian algebra with one or more vacua (<A_sym,A>=1 or >1), gSPT/gSSB likewise for a non-Lagrangian one, and the prefix "i" (intrinsically gapless) when every Lagrangian above the algebra in the partial order has more vacua than the algebra itself, the criterion of Bhardwaj et al. [arXiv:2403.00905, cited in arXiv:2605.31602 Sec. Hasse]
+		#SPT/SSB for a Lagrangian algebra with one or more vacua (<A_sym,A>=1 or >1), gSPT/gSSB likewise for a non-Lagrangian one, and the prefix "i" (intrinsically gapless) when every Lagrangian above the algebra in the partial order has more vacua than the algebra itself, the criterion of Bhardwaj et al. [arXiv:2403.00905]
 		algs:=inp[1];
 		nsym:=inp[2];
 		HasseLines:=inp[3];
@@ -536,7 +536,7 @@ OperatorAlgebra:=function(arg)
 	local inp,A,H,F,gamma,eps,G,omega,omegam,trivialOmega,ElF,ElG,cosets,cos,R,
 		seen,g,r,k,basis,dim,one,multiplyBasis,multiply,unit,grading,GAction,
 		structureConstants,i,j,pair1,pair2,coefficient,q,ci,rp,h,np,out,u,v;
-	#the basis is Cartesian(R,Elements(F)) of arXiv:2605.31602 eq. (basiselm), one twisted group-algebra block per representative of a left coset gH, since eq. (v_equiv_rel) identifies v_{gh,n} with v_{g,hnh^-1}: products from different blocks vanish, and vectors are coefficient lists in this basis
+	#the basis is v_{r,f}, (r,f) in Cartesian(R,Elements(F)), one twisted group-algebra block per representative r of a left coset gH, since v_{gh,f}=eps(h,f) omega(g,h|f) v_{g,hfh^-1}: products from different blocks vanish, and vectors are coefficient lists in this basis
 	#the input record of the computation below: the algebra, omega of the theory and the optional R
 	inp:=rec(data:=arg[2]);
 	if IsRecord(inp.data) then inp.data:=inp.data.A; fi;
@@ -648,7 +648,7 @@ OperatorAlgebra:=function(arg)
 				ErrorNoReturn("OperatorAlgebra.GAction: invalid right correction");
 			fi;
 			nnew:=hh*b[2]*hh^-1;
-			#g.v_{r,n} = omega(g,r|n)^-1 v_{g r,n} and v_{rnew hh,n} = eps(hh,n) omega(rnew,hh|n) v_{rnew,hh n hh^-1}, omega(f,g|h) = 3cocr. These are eqn:G-action_algebra_basis and eq:v_equiv_rel of arXiv:2605.31602 with omega(f,g|h) inverted, so that the action is omega(.,.|x)^-1-projective as for the anyons (Prop. anyon) and the product is G-equivariant
+			#g.v_{r,n} = omega(g,r|n)^-1 v_{g r,n} and v_{rnew hh,n} = eps(hh,n) omega(rnew,hh|n) v_{rnew,hh n hh^-1}, omega(f,g|h) = 3cocr, so that (g1 g2).v=omega(g1,g2|x) g1.(g2.v), i.e. the representations are omega(.,.|x)^-1-projective (rho(g1)rho(g2)=beta(g1,g2)rho(g1 g2)) as for the anyons, and the product is G-equivariant
 			if trivialOmega then
 				factor:=eps(hh,b[2]);
 			else
@@ -827,7 +827,7 @@ TeXOutput:=function(s,opts)
 	return s;
 end;
 
-#AlgebraTableTeX: the table of algebras of a theory in the layout of arXiv:2605.31602 (Table tab:G_om)
+#AlgebraTableTeX: the table of algebras of a theory in the layout of the algebra tables of arXiv:2605.31602
 #in: (th,M[,opts]) with th from TQDTheory, M from AlgebraClasses(th) and opts a record with optional fields classes (class indices to show, default all), prefix (label prefix, default "A"), symbol (the displayed name of algebra i is symbol_{i}, default "A^\omega" for a twisted theory and "A" otherwise), file (write the table there)
 #out: the LaTeX string of a one-column tabular: for each class, in the order of DisplayClasses, the rows \nameref{prefix:i}$=A(H,N,gamma,eps)$, then $\xlabel[$symbol_{i}$]{prefix:i} decomposition$, then the reduced topological order (Trivial for the Lagrangian algebras, which follow a double \hline), \xlabel is the macro of arXiv:2605.31602, \newcommand\xlabel[2][]{\phantomsection\def\@currentlabelname{#1}\label{#2}} (needs hyperref and \makeatletter), and \Z is its macro for cyclic groups
 AlgebraTableTeX:=function(arg)
@@ -855,7 +855,7 @@ AlgebraTableTeX:=function(arg)
 	return TeXOutput(s,opts);
 end;
 
-#TwinTableTeX: the table of twin algebras of a theory in the layout of arXiv:2605.31602 (Table tab:twinsG32-43)
+#TwinTableTeX: the table of twin algebras of a theory in the layout of the twin table of arXiv:2605.31602
 #in: (th,M[,opts]) with th from TQDTheory, M from AlgebraClasses(th) and opts a record with optional field file
 #out: the LaTeX string of an array with one row per twin pair of M.twins: the two algebras A(H,N,gamma,eps) and their common anyon decomposition, their reduced topological orders, and the reason(s) of M.reasons for that pair (inequivalence of the subgroups or of gamma, eps up to conjugation, as found by AlgebraClassesG)
 TwinTableTeX:=function(arg)
@@ -875,7 +875,7 @@ TwinTableTeX:=function(arg)
 	return TeXOutput(s,opts);
 end;
 
-#HasseTikz: the Hasse diagram of a theory as a tikz picture in the layout of arXiv:2605.31602 (Figure fig:Hasse3243_om)
+#HasseTikz: the Hasse diagram of a theory as a tikz picture in the layout of the Hasse diagrams of arXiv:2605.31602
 #in: (th,Hs[,opts]) with th from TQDTheory, Hs from Hasse(th) and opts a record with optional fields classes (class indices of Hs.M to draw, default all: a partial diagram as in the paper), prefix (as in AlgebraTableTeX, default "A"), nameref:=false (label the nodes $symbol_{i}$ instead of \nameref{prefix:i}, symbol as in AlgebraTableTeX), xsep (horizontal distance of neighbouring nodes in the widest level, default 11/10, the other levels are spread over the same width), ysep (distance of the dimension levels, default 3/2), file (write the picture there)
 #out: the LaTeX string of the tikzpicture: the shown algebras arranged by quantum dimension along the vertical axis (the identity algebra at the top, the Lagrangian algebras at the bottom), node i the i-th class of DisplayClasses, and an arrow p_i -> p_j for each directed edge among the shown classes (A_i strictly included in A_j and no shown A_k in between), from the full inclusion relation Hs.inclusions
 HasseTikz:=function(arg)
@@ -935,14 +935,17 @@ HasseTableTeX:=function(arg)
 	local th,Hs,opts,cl,prefix,tikzopts,tableopts,diagram,table;
 	th:=arg[1]; Hs:=arg[2];
 	if Length(arg)>2 then opts:=arg[3]; else opts:=rec(); fi;
-	cl:=DisplayClasses(Hs.M,opts);
-	if cl=[] or Length(Set(cl))<>Length(cl) or not ForAll(cl,i->IsInt(i) and i in [1..Length(Hs.M.classes)]) then
+	#the class indices are checked before DisplayClasses reads them
+	if IsBound(opts.classes) and not (IsList(opts.classes) and opts.classes<>[] and IsDuplicateFreeList(opts.classes)
+		and ForAll(opts.classes,i->IsPosInt(i) and i<=Length(Hs.M.classes))) then
 		ErrorNoReturn("HasseTableTeX: classes must be distinct class indices of Hs.M");
 	fi;
+	cl:=DisplayClasses(Hs.M,opts);
 	if IsBound(opts.prefix) then prefix:=opts.prefix; else prefix:="A"; fi;
 	tikzopts:=rec(classes:=cl,prefix:=prefix);
 	tableopts:=rec(classes:=cl,prefix:=prefix);
 	if IsBound(opts.symbol) then tikzopts.symbol:=opts.symbol; tableopts.symbol:=opts.symbol; fi;
+	if IsBound(opts.nameref) then tikzopts.nameref:=opts.nameref; fi;
 	if IsBound(opts.xsep) then tikzopts.xsep:=opts.xsep; fi;
 	if IsBound(opts.ysep) then tikzopts.ysep:=opts.ysep; fi;
 	if IsBound(opts.diagramFile) then tikzopts.file:=opts.diagramFile; fi;
@@ -978,7 +981,7 @@ PhaseLabels:=function(arg)
 	local th,nsym,Hs;
 	th:=arg[1]; nsym:=arg[2];
 	if Length(arg)>2 then Hs:=arg[3]; else Hs:=Hasse(th); fi;
-	#the symmetry boundary is a gapped boundary: a Lagrangian algebra, i.e. of dimension |G| (arXiv:2605.31602, Corollary Lagrangian algebras)
+	#the symmetry boundary is a gapped boundary: a Lagrangian algebra, i.e. of dimension |G|, since dim A(H,F,gamma,eps)=|G||F|/|H|, so H=F
 	if not nsym in [1..Length(Hs.M.classes)] or Hs.M.classes[nsym].dim<>Order(th.G) then
 		ErrorNoReturn("PhaseLabels: nsym must be the index of a Lagrangian algebra class (dimension |G|)");
 	fi;

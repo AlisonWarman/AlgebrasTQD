@@ -14,6 +14,7 @@
 ## - AlgebraData: the algebras A(H,F,gamma,eps) of Z(Vec_G^omega)
 ## - SubgroupPairs: the subgroup pairs of the algebras of a theory that pass a filter
 ## - TQDAlgebras: the algebras of a theory that pass a filter
+## - LabelledGeneratingSet: a generating set of a subgroup with the fewest generators, chosen by the labels, so that names do not depend on the session
 ## - AlgebraName: a one-line name of an algebra
 ## - ShowFgammagl: prints F and the nontrivial values of gamma
 ## - TeXGroupName: a group name in the notation of arXiv:2605.31602
@@ -125,7 +126,7 @@ epsfA:=function(inpdata)
 	od;
 				
 	if IsEqualSet(ElH,ElF) then
-		#eps from gamma solves the epsilon relations when d(gamma)=omega|F (arXiv:2605.31602 App. A), not re-tested here
+		#for H=F, eps(f1,f2)=gamma(f1,f2)/gamma(f1 f2 f1^-1,f1) solves the epsilon relations when d(gamma)=omega|F, not re-tested here
 			return [function(f1,f2) return epsFF[Position(ElF,f1)][Position(ElF,f2)]; end];
 		#else ErrorNoReturn("ERROR in Lag eps") return fail fi
 	else
@@ -353,7 +354,7 @@ epsf:=function(inpdata)
 	od;
 				
 	if IsEqualSet(ElH,ElF) then
-		#eps from gamma solves the epsilon relations when d(gamma)=omega|F (arXiv:2605.31602 App. A), not re-tested here
+		#for H=F, eps(f1,f2)=gamma(f1,f2)/gamma(f1 f2 f1^-1,f1) solves the epsilon relations when d(gamma)=omega|F, not re-tested here
 			return [function(f1,f2) return epsFF[Position(ElF,f1)][Position(ElF,f2)]; end];
 		#else ErrorNoReturn("ERROR in Lag eps") return fail fi
 	else
@@ -581,7 +582,7 @@ AlgSubgroups:=function(data)
 				Add(Ftot,[H]);
 			else 
 				Ftott:=[];
-				#pairs (H,F), (H,^gF) with g in N_G(H) give isomorphic algebras (Lemma Morita_equiv), one is kept
+				#pairs (H,F), (H,^gF) with g in N_G(H) give isomorphic algebras, A(H,F,gamma,eps)=A(gHg^-1,gFg^-1,gamma',eps') with gamma'(gf1g^-1,gf2g^-1)=gamma(f1,f2)/Omega_g(f1,f2) and eps'(ghg^-1,gfg^-1)=eps(h,f) Omega_g(hfh^-1,h)/Omega_g(h,f), one is kept
 				for F in NormalSubgroupReps(G,H) do
 					if not (F=H and op="non-Lag") then
 						Add(Ftott,F);
@@ -717,6 +718,31 @@ TQDAlgebras:=function(arg)
 	return AlgebraData(data);
 end;
 
+#LabelledGeneratingSet: a generating set of a subgroup with the fewest generators, chosen by the labels, so that names do not depend on the session (MinimalGeneratingSet does)
+#in: (S,glG) with S a subgroup of G and glG=[elements,labels] a labelled list of the elements of G (e.g. th.glG or MakeGroupLabels([G]))
+#out: the first generating set of S with Length(MinimalGeneratingSet(S)) elements, in the order of the label length and then of the position in glG[1], e.g. [r] for C4=<r> rather than [r^3]; [] for the trivial group
+LabelledGeneratingSet:=function(S,glG)
+	local d,els,gens,U,g,c;
+	if IsTrivial(S) then return []; fi;
+	d:=Length(MinimalGeneratingSet(S));
+	els:=Filtered([1..Length(glG[1])],i->not IsOne(glG[1][i]) and glG[1][i] in S);
+	SortBy(els,i->[Length(glG[2][i]),i]);
+	els:=glG[1]{els};
+	#greedy in this order, enough when it gives d generators
+	gens:=[];
+	U:=TrivialSubgroup(S);
+	for g in els do
+		if not g in U then Add(gens,g); U:=ClosureGroup(U,g); fi;
+		if Size(U)=Size(S) then break; fi;
+	od;
+	if Length(gens)=d then return gens; fi;
+	#otherwise the first d elements, in this order, that generate S
+	for c in IteratorOfCombinations([1..Length(els)],d) do
+		if Size(Group(els{c}))=Size(S) then return els{c}; fi;
+	od;
+	ErrorNoReturn("LabelledGeneratingSet: no generating set found");
+end;
+
 #AlgebraName: a one-line name of an algebra
 #in: (A[,glG]), A=[H,F,gamma,eps,G], glG=[elements,labels] (default MakeGroupLabels([G]))
 #out: a string such as "A(S3=<s,r>, C3=<r>, 1, eps)" (gamma, eps written 1 when identically 1)
@@ -727,7 +753,7 @@ AlgebraName:=function(arg)
 	gl:=g->glG[2][Position(glG[1],g)];
 	gens:=function(S)
 		local l;
-		l:=List(MinimalGeneratingSet(S),gl);
+		l:=List(LabelledGeneratingSet(S,glG),gl);
 		if l=[] then return StructureDescription(S); fi;
 		return Concatenation(StructureDescription(S),"=<",JoinStringsWithSeparator(l,","),">");
 	end;
@@ -788,7 +814,7 @@ end;
 
 #TeXLabel: a group-element or anyon label in LaTeX (math mode)
 #in: s a label of MakeGroupLabels or AnyonLabelStrings, e.g. "([f2],1 f3=E(8)^5)", "1*e1"
-#out: the LaTeX string, e.g. "([f_{2}],1\,f_{3}=\zeta_{8}^{5})", "e_{1}"
+#out: the LaTeX string, e.g. "([f_{2}],1\;f_{3}=\zeta_{8}^{5})", "e_{1}"
 TeXLabel:=function(s)
 	local out,i,j,fac;
 	if '*' in s then
@@ -850,7 +876,7 @@ AlgebraDisplayData:=function(arg)
 	#generator strings of a subgroup: [plain, TeX]
 	gens:=function(S)
 		local l;
-		l:=List(MinimalGeneratingSet(S),gl);
+		l:=List(LabelledGeneratingSet(S,th.glG),gl);
 		if l=[] then return ["1","1"]; fi;
 		return [Concatenation(StructureDescription(S),"=<",JoinStringsWithSeparator(l,","),">"),
 			Concatenation(TeXGroupName(StructureDescription(S)),"=\\langle ",JoinStringsWithSeparator(List(l,TeXLabel),","),"\\rangle")];
@@ -875,7 +901,7 @@ AlgebraDisplayData:=function(arg)
 		if r.na[i]=1 then return labTeX[i]; fi;
 		return Concatenation(String(r.na[i]),labTeX[i]);
 	end)," \\oplus ");
-	#reduced topological order (arXiv:2605.31602 Thm DS-reducedTO)
+	#reduced topological order Z(Vec_{H/F}^alpha), alpha from alphaf, untwisted when alpha is a coboundary
 	al:=fail;
 	if IsBound(opts.reducedTO) and opts.reducedTO=false then
 		#skipped
@@ -974,7 +1000,7 @@ ShowAlgData:=function(arg)
 	#"S=<generators>" with S the StructureDescription, or just S for the trivial group
 	gstr:=function(S)
 		local l;
-		l:=List(MinimalGeneratingSet(S),gl);
+		l:=List(LabelledGeneratingSet(S,th.glG),gl);
 		if l=[] then return StructureDescription(S); fi;
 		return Concatenation(StructureDescription(S),"=<",JoinStringsWithSeparator(l,","),">");
 	end;

@@ -6,12 +6,12 @@
 ## Maps from algebra data to anyons across interfaces
 ##
 ## Functions in this file (the first line of each header):
-## - AlgAnyonsProducts: decomposes an algebra of G = G1 x ... x Gk into the product anyons a1 x ... x ak, ai of Z(Vec_Gi) (eq. (scalar_prod_anyon_decom), Gruen-Morrison (2.10))
+## - AlgAnyonsProducts: decomposes an algebra of G = G1 x ... x Gk into the product anyons a=a1 x ... x ak, ai of Z(Vec_Gi), with flux x and character chi_a=prod chi_ai, by n_a=(1/|G|) sum_{f in [x]} sum_{h in C_G(x)} conj(chi_a(h) phi_f(h)) t(f,chc^-1), c with f^c=x, t(f,g)=sum_{y in R, g^y in H, f^y in F} eps(g^y,f^y) omega(g^y,y^-1|f)/omega(y^-1,g|f), phi_f(h)=theta_x(c^-1,g) theta_x(c^-1 g,c)/theta_f(c,c^-1) for g=chc^-1 (Gruen-Morrison (2.10), phi=1 for f=x or omega=1)
 ## - AlgAnyonsV: decomposes an algebra into anyons (the case k=1 of AlgAnyonsProducts)
 ## - AlgAnyons: decomposes an algebra into anyons and prints the decomposition
 ## - AlgAnyonsG1G2V: the case k=2 of AlgAnyonsProducts, with the old list input (opA="*" conjugates the second copy only)
-## - alphaf: the condensed theory K=H/F of an algebra A(H,F,gamma,eps) and its 3-cocycle alpha, arXiv:2605.31602 eq. (twist_reduced_TO), with changes 1.1 and 1.2
-## - InterfaceMap: the anyon map across the interface of an algebra A(H,F,gamma,eps) of Z(Vec_G^omega) to Z(Vec_K^alpha), K=H/F, read off one folded Lagrangian algebra containing A x A(K,1,1,1) (arXiv:2605.31602 sec. Fold, all maps: AllInterfaceMaps)
+## - alphaf: the reduced theory K=H/F of an algebra A(H,F,gamma,eps) and its 3-cocycle alpha (written out in the header of alphaf), returned as its bar
+## - InterfaceMap: the anyon map across the interface of an algebra A(H,F,gamma,eps) of Z(Vec_G^omega) to Z(Vec_K^alpha), K=H/F, read off one folded Lagrangian algebra L(H^diag,phi) of Z(Vec_G^omega) x bar Z(Vec_K^alpha) = Z(Vec_{GxK}^{omega x bar alpha}), H^diag={(h,p(h)): h in H}, containing A x A(K,1,1,1) (all maps: AllInterfaceMaps)
 ## - AlgebrasWithAnyons: every algebra of a theory together with its decomposition into anyons
 ## - ShowAlgebrasWithAnyons: prints one line per algebra: index, dimension, name, condensed group K, decomposition
 ## - FindAlgebras: the algebras of a list from AlgebrasWithAnyons with a given anyon content
@@ -28,7 +28,7 @@
 
 
 
-#AlgAnyonsProducts: decomposes an algebra of G = G1 x ... x Gk into the product anyons a1 x ... x ak, ai of Z(Vec_Gi) (eq. (scalar_prod_anyon_decom), Gruen-Morrison (2.10))
+#AlgAnyonsProducts: decomposes an algebra of G = G1 x ... x Gk into the product anyons a=a1 x ... x ak, ai of Z(Vec_Gi), with flux x and character chi_a=prod chi_ai, by n_a=(1/|G|) sum_{f in [x]} sum_{h in C_G(x)} conj(chi_a(h) phi_f(h)) t(f,chc^-1), c with f^c=x, t(f,g)=sum_{y in R, g^y in H, f^y in F} eps(g^y,f^y) omega(g^y,y^-1|f)/omega(y^-1,g|f), phi_f(h)=theta_x(c^-1,g) theta_x(c^-1 g,c)/theta_f(c,c^-1) for g=chc^-1 (Gruen-Morrison (2.10), phi=1 for f=x or omega=1)
 #in: rec(A:=[H,F,gamma,eps,G], ps:=projections G->Gi, es:=embeddings Gi->G, aGs:=anyons of the Gi, [stars:=k strings "" or "*" ("*" conjugates that copy)], [om:=rec(a,N) on G])
 #out: [dimA,na] with na indexed by Cartesian(aG1,...,aGk), aG1 outermost
 AlgAnyonsProducts:=function(inp)
@@ -157,7 +157,7 @@ AlgAnyonsG1G2V:=function(inp)
 end;
 
 
-#alphaf: the condensed theory K=H/F of an algebra A(H,F,gamma,eps) and its 3-cocycle alpha, arXiv:2605.31602 eq. (twist_reduced_TO), with changes 1.1 and 1.2
+#alphaf: the reduced theory K=H/F of an algebra A(H,F,gamma,eps) and its 3-cocycle alpha, returned as its bar (see out): for a normalized section s:K->H, tau(a,b)=s(b)^-1 s(a)^-1 s(ab), tau1=tau(y,z), tau2=tau(x,yz), tau3=tau(x,y), tau4=tau(xy,z), u=s(y)^-1 s(x)^-1 s(xyz) and t=tau3^(s(z)tau4) (x^g=g^-1 x g), alpha(x,y,z) = omega(s(x),s(y),u) gamma(tau1,tau2)/gamma(tau4,t) eps(s(z)tau4,t) omega(s(x)s(y),tau3,s(z)tau4)/(omega(s(y),s(y)^-1 s(yz),tau2) omega(s(z),tau1,tau2)) omega(s(z),tau4,t)/omega(s(x),s(y),tau3)
 #in: [algebra] or [algebra,omega] with algebra=[H,F,gamma,eps,G] and omega=rec(a,N) additive
 #out: [[pG,pK,eG,eK,p],ElK,ala,GK,omfull,Ualm]: ala=rec(a,N) is alpha with the bar on ElK, omfull=omega x bar alpha on GK=GxK, Ualm the values of alpha<>1
 alphaf:=function(data)
@@ -202,7 +202,7 @@ alphaf:=function(data)
 	taup:=function(x,y,z) return s(x*y*z)^-1*s(x)*s(y)*s(x*y)^-1*s(x*y*z); end;
 	
 	omm:=function(a,b,c) if Uom=[1] then return 1; fi; return E(omega.N)^(omega.a(a,b,c)); end;
-	#alpha(x,y,z) of eq. (twist_reduced_TO) with Changes 1.1, 1.2 of arXiv:2605.31602, factor by factor, yp=s(xy)^-1 s(xyz)=s(z)tau_4 and tp^-1=tau_3^{s(z)tau_4}, with f^g=g^-1 f g
+	#alpha(x,y,z) of the header, factor by factor, yp=s(xy)^-1 s(xyz)=s(z)tau_4 and tp^-1=tau_3^{s(z)tau_4}, with f^g=g^-1 f g
 	alm:=function(x,y,z)
 		local tp,yp;
 		tp:=taup(x,y,z); yp:=s(x*y)^-1*s(x*y*z);
@@ -220,7 +220,7 @@ alphaf:=function(data)
 	od;
 	#alpha identically 1 (Ualm=[]) is a normalized 3-cocycle, otherwise test the cocycle condition and normalization once
 	if Ualm<>[] and 3coctestm([ElK,almt])=false then
-		ErrorNoReturn("alphaf: eq. (twist_reduced_TO) gave no normalized 3-cocycle for ",
+		ErrorNoReturn("alphaf: alpha is not a normalized 3-cocycle for ",
 			StructureDescription(G), " with H=", StructureDescription(H),
 			" and F=", StructureDescription(F));
 	fi;
@@ -269,9 +269,9 @@ end;
 
 
 
-#InterfaceMap: the anyon map across the interface of an algebra A(H,F,gamma,eps) of Z(Vec_G^omega) to Z(Vec_K^alpha), K=H/F, read off one folded Lagrangian algebra containing A x A(K,1,1,1) (arXiv:2605.31602 sec. Fold, all maps: AllInterfaceMaps)
+#InterfaceMap: the anyon map across the interface of an algebra A(H,F,gamma,eps) of Z(Vec_G^omega) to Z(Vec_K^alpha), K=H/F, read off one folded Lagrangian algebra L(H^diag,phi) of Z(Vec_G^omega) x bar Z(Vec_K^alpha) = Z(Vec_{GxK}^{omega x bar alpha}), H^diag={(h,p(h)): h in H}, containing A x A(K,1,1,1) (all maps: AllInterfaceMaps)
 #in: (th,A[,opts]) with th from TQDTheory (or a record with aG, [om], [glG]), A an algebra [H,F,gamma,eps,G] or a record from AlgebrasWithAnyons, and opts a record with optional fields alpha (alphaf output), gen (elements of H giving m1, m2, ... of an untwisted abelian K), glK, aK (anyons of K built with opA:="*" and om:=ala)
-#out: rec(m,aK,labK,K,ala,L,c) after printing the map: m[b][a] rows aK (barred, theta(b)=conj(theta(a)) for dim A>1), columns aG, row 1 = decomposition of A, dim A=1: m identity, aK=aG, Lagrangian: m=[na], aK=fail
+#out: rec(m,aK,labK,K,ala,L,c) after printing the map (not for a Lagrangian algebra): m[b][a] rows aK (barred, theta(b)=conj(theta(a)) for dim A>1), columns aG, row 1 = decomposition of A, dim A=1: m identity, aK=aG, Lagrangian: m=[na], aK=fail
 InterfaceMap:=function(arg)
 	local inp,f,H,F,gamma,eps,G,aG,om,zero,lab,thA,naA,dimA,out,pG,pK,eG,eK,p,ElK,K,ala,GK,omfull,Ualm,glK,gen,aK,labK,
 		HL,gammaL,epsres,A,L,c,t,m,printmap,k,pos,cand;
@@ -359,10 +359,11 @@ InterfaceMap:=function(arg)
 		aK:=Anyons(aK);
 	fi;
 	labK:=AnyonLabelStrings(aK);
-	if Ualm<>[] then Print("Anyons in D^alpha(",StructureDescription(K),"):\n"); else Print("Anyons in D(",StructureDescription(K),"):\n"); fi;
+	#the reduced theory is twisted only when alpha is not a coboundary, as in AlgebraDisplayData
+	if Ualm<>[] and GammaTrivialization(K,ala)=fail then Print("Anyons in D^alpha(",StructureDescription(K),"):\n"); else Print("Anyons in D(",StructureDescription(K),"):\n"); fi;
 	for k in [1..Length(aK)] do Print("d=",dima(aK[k],One(K)),"\t",labK[k],"\n"); od;
 
-	#A x A(K,1,1,1) in the folded theory (eq. (alg_to_include))
+	#A x A(K,1,1,1)=A(HxK,Fx1,tgamma,teps) in the folded theory, tgamma((f1,1),(f2,1))=gamma(f1,f2), teps((h,k),(f,1))=eps(h,f)
 	A:=[Group(Concatenation(eG(Elements(H)),eK(ElK))),eG(F),
 		function(g,h) return gamma(pG(g),pG(h)); end,function(g,h) return eps(pG(g),pG(h)); end,GK];
 	#the first Lagrangian algebra L(H^diag,phi) of the folded theory that contains it, the inclusion is tested in the folded theory, whose cocycle omfull is also that of L, so it is passed even when omega is trivial (alpha need not be)
@@ -541,7 +542,7 @@ AutomorphismsDG:=function(th)
 	return out;
 end;
 
-#AllInterfaceMaps: all anyon maps of the interfaces defined by an algebra, from the one map of InterfaceMap: the folded Lagrangian algebras are related by braided autoequivalences of the reduced theory (arXiv:2605.31602, after eq. (Afolded)), so the maps are P.m for the permutation matrices P of AutomorphismsAnyons
+#AllInterfaceMaps: all anyon maps of the interfaces defined by an algebra, from the one map of InterfaceMap: two folded Lagrangian algebras L(H^diag,phi) that contain A x A(K,1,1,1) are related by a braided autoequivalence of the reduced theory, so the maps are P.m for the permutation matrices P of AutomorphismsAnyons
 #in: (I[,auts]) with I a record of InterfaceMap and auts a list of records with field perm, permutations of the rows of I.m (default AutomorphismsAnyons(rec(G:=I.K,aG:=I.aK,om:=I.ala)))
 #out: the distinct matrices m' with m'[perm[b]]=I.m[b], as records rec(m,auts) with auts the positions in auts giving m', the first is I.m itself. For a Lagrangian algebra (I.aK=fail) the list [rec(m:=I.m,auts:=[])]
 AllInterfaceMaps:=function(arg)

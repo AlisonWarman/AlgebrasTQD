@@ -44,8 +44,8 @@
 ## - D4NCocycleRecord: accepts N, a D4NData record, or an existing D4NCocycle record
 ## - D4NCocycleTest: the slow cocycle identities for D_{4N}, checked on request
 ## - D4NPhaseGate: the constant-depth circuit for the counterterm beta and the logical gate it encodes
-## - QuditSState: the Z_d stabilizer state |S>
-## - D4NSurgeryGate: the T^{1/N} logical gate obtained by hybrid lattice surgery
+## - QuditSState: the Z_d stabilizer state |S>=S|+>
+## - D4NSurgeryGate: the logical gate of hybrid lattice surgery, T^{1/N} in the X basis of the Z_2 patch
 ##
 #############################################################################
 
@@ -601,13 +601,13 @@ end;
 RoughMergeSplit:=function(inp)
 	local G,gs,KL,kL,vL,KR,kR,Hr,show,lab,labKR,labR,Rv,Lk,
 	      GK,eGR,eKR,pGR,pKR,Hdr,first,inG,nrm,
-	      Pid,PR,Pd,P,vid,U,n,vin,t,M,mu,Un,m,ev,cp,mult,Dt,res;
+	      Pid,PR,Pd,P,vid,U,n,vin,t,M,mu,Un,m,ms,ev,cp,mult,Dt,res;
 	#inp.G the (non-Abelian) code group of the middle patch, inp.gs its ordered elements, identity first (default Elements(G))
 	#inp.KL the code group of the left patch, inp.kL its ordered elements, identity first (default Elements(KL)), inp.vL the logical input state in the basis kL
 	#inp.HdL generators of K^diag in KL x G as pairs [k,g], inp.HdR generators of K^diag in G x KR as pairs [g,k]
 	#inp.KR the code group of the right patch, inp.kR its ordered elements, identity first (default Elements(KR))
 	#inp.Hr the boundary subgroup of G projected onto after the second merge (a subgroup or a list of generators, default trivial)
-	#inp.maxlevel if bound, also return the Clifford level of the logical action, inp.conductor the m of the field CF(m) in which the eigenvalues are sought (default the conductor of the entries of Unorm)
+	#inp.maxlevel if bound, also return the Clifford level of the logical action, inp.conductor the m of the field CF(m) in which the eigenvalues are sought (default the first m=Lcm(c,k), k=1,...,4*|KR|, c the conductor of the entries of Unorm, whose field contains them all)
 	#inp.show true prints the intermediate states with the labels inp.lab, inp.labKR
 	if not (IsRecord(inp) and ForAll(["G","KL","vL","HdL","KR","HdR"],
 		f->IsBound(inp.(f)))) then
@@ -692,16 +692,24 @@ RoughMergeSplit:=function(inp)
 	else
 		Un:=U;
 	fi;
-	if IsBound(inp.conductor) then m:=inp.conductor; else m:=Conductor(Flat(Un)); fi;
-	ev:=Eigenvalues(CF(m),Un);
-	#Eigenvalues returns the distinct eigenvalues lying in CF(m): check that their algebraic multiplicities fill the spectrum
+	#the eigenvalues are sought in CF(m) for m=inp.conductor, or else for m=Lcm(c,k), k=1,...,4*|KR|, with c the conductor of the entries of Un (the eigenvalues of a matrix over CF(c) usually lie in a larger field, e.g. the cube roots of unity of the shift of a Z_3 patch)
 	cp:=CharacteristicPolynomial(Un);
-	mult:=List(ev,function(e)
-		local q,k;
-		q:=cp; k:=0;
-		while Value(q,e)=0 do k:=k+1; q:=Derivative(q); od;
-		return k;
-	end);
+	if IsBound(inp.conductor) then
+		ms:=[inp.conductor];
+	else
+		ms:=DuplicateFreeList(List([1..4*Length(kR)],k->Lcm(Conductor(Flat(Un)),k)));
+	fi;
+	for m in ms do
+		ev:=Eigenvalues(CF(m),Un);
+		#Eigenvalues returns the distinct eigenvalues lying in CF(m): check that their algebraic multiplicities fill the spectrum
+		mult:=List(ev,function(e)
+			local q,k;
+			q:=cp; k:=0;
+			while Value(q,e)=0 do k:=k+1; q:=Derivative(q); od;
+			return k;
+		end);
+		if Sum(mult)=Length(kR) then break; fi;
+	od;
 	if Sum(mult)<>Length(kR) then
 		ErrorNoReturn("RoughMergeSplit: some eigenvalues are not in CF(",m,"). Pass a larger inp.conductor");
 	fi;
@@ -1029,19 +1037,22 @@ D4NPhaseGate:=function(inp)
 	return rec(coc:=coc,n:=n,M1:=M1,M2:=M2,Mbeta:=Mbeta,br:=br,level:=lvl,U:=U);
 end;
 
-#QuditSState: the Z_d stabilizer state |S> = (1/sqrt(d)) sum_j e^{i pi j^2/d} |m^j>, the input of the hybrid lattice surgery for d=4N
+#QuditSState: the Z_d stabilizer state |S> = S|+>, with S the phase gate of Cliffords1, the input of the hybrid lattice surgery for d=4N
 #in: d an integer >= 2
-#out: the vector (1/sqrt(d))*[E(2d)^(j^2)] of length d
+#out: the vector (1/sqrt(d))*[E(2d)^(j^2)] for even d, (1/sqrt(d))*[E(2d)^(j(j-1))] for odd d, of length d (for odd d, E(2d)^(j^2) is not periodic in j mod d and is not a stabilizer state)
 QuditSState:=function(d)
 	if not IsInt(d) or d<2 then ErrorNoReturn("d must be an integer >= 2"); fi;
-	return 1/Sqrt(d)*List([0..d-1],j->E(2*d)^(j^2));
+	if IsEvenInt(d) then
+		return 1/Sqrt(d)*List([0..d-1],j->E(2*d)^(j^2));
+	fi;
+	return 1/Sqrt(d)*List([0..d-1],j->E(2*d)^(j*(j-1)));
 end;
 
-#D4NSurgeryGate: the T^{1/N} logical gate obtained by hybrid lattice surgery (arXiv:2510.20890)
+#D4NSurgeryGate: the logical gate of hybrid lattice surgery (arXiv:2510.20890), T^{1/N} in the X basis of the Z_2 patch
 #in: (N[,show]) with N a positive integer and show true to print the intermediate states
-#out: the RoughMergeSplit record with the extra field phase=E(8N) or E(8N)^-1 (the same gate up to conjugation by X and a global phase, which one depends on the order of Eigenvalues)
+#out: the RoughMergeSplit record, whose U acts on the basis |1>,|m> of the Z_2 patch, with the extra fields phase=E(8N) or E(8N)^-1 (the spectrum {1,phase} up to a global phase, which one depends on the order of Eigenvalues), UX=H*U*H/2 with H=[[1,1],[1,-1]] the gate in the basis (|1>+|m>)/sqrt(2), (|1>-|m>)/sqrt(2), where it is diagonal, gateX=[1,E(8N)^(+-1)] its diagonal divided by its first entry, and level the Clifford-hierarchy level, computed when N is a power of 2 (T^{1/N} is in the hierarchy, at level Log2(N)+3, exactly then)
 D4NSurgeryGate:=function(arg)
-	local N,show,data,G,r,s,d,KL,a,kL,KR,m,kR,res;
+	local N,show,data,G,r,s,d,KL,a,kL,KR,m,kR,res,H,lvl;
 	#the protocol: merge a D(Z_{4N}) patch prepared in |S> into a D(D_{4N}) patch by gauging Z_{4N}^diag=<(m,r)>, split, merge the result into a D(Z_2) patch by gauging <(r^{2N},m),(rs,1)>, project on the boundary subgroup <s> and read the D(D_{4N}) patch in <id|
 	N:=arg[1];
 	if not IsPosInt(N) then ErrorNoReturn("D4NSurgeryGate: N must be a positive integer"); fi;
@@ -1055,6 +1066,8 @@ D4NSurgeryGate:=function(arg)
 	KR:=CyclicGroup(2);
 	m:=First(Elements(KR),g->Order(g)=2);
 	kR:=[One(KR),m];
+	#T^{1/N} lies in the Clifford hierarchy only for N a power of 2, at level Log2(N)+3
+	if 2^Log2Int(N)=N then lvl:=Log2Int(N)+3; else lvl:=fail; fi;
 	res:=RoughMergeSplit(rec(G:=G,gs:=data.El,lab:=data.lab,
 		KL:=KL,kL:=kL,vL:=QuditSState(d),HdL:=[[a,r]],
 		KR:=KR,kR:=kR,labKR:=["1","m"],
@@ -1066,6 +1079,22 @@ D4NSurgeryGate:=function(arg)
 	fi;
 	if not res.clifford=false then
 		ErrorNoReturn("D4NSurgeryGate: the logical gate should be non-Clifford");
+	fi;
+	#U is diagonal in the X basis of the Z_2 patch, not in the basis |1>,|m>
+	H:=[[1,1],[1,-1]];
+	res.UX:=H*res.U*H/2;
+	if not IsDiagonalMat(res.UX) then
+		ErrorNoReturn("D4NSurgeryGate: the logical gate is not diagonal in the X basis");
+	fi;
+	res.gateX:=DiagonalOfMat(res.UX)/res.UX[1][1];
+	if not (res.gateX[2]=E(8*N) or res.gateX[2]=ComplexConjugate(E(8*N))) then
+		ErrorNoReturn("D4NSurgeryGate: unexpected logical gate in the X basis");
+	fi;
+	if lvl<>fail then
+		res.level:=CliffordLevel(res.U,res.Dt,lvl);
+		if res.level<>lvl then
+			ErrorNoReturn("D4NSurgeryGate: wrong logical Clifford-hierarchy level");
+		fi;
 	fi;
 	return res;
 end;

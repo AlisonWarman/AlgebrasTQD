@@ -159,7 +159,7 @@ MakeGroupLabels:=function(inp)
 							Add(known,g);
 							Add(labG,lt);
 							AddDictionary(knownPos,g,Length(known));
-						elif gel(labG[pos],lt) then
+						elif not labG[pos] in genlabs and gel(labG[pos],lt) then
 							labG[pos]:=lt;
 						fi;
 					od;
@@ -180,7 +180,7 @@ MakeGroupLabels:=function(inp)
 								Add(known,g);
 								Add(labG,lt);
 								AddDictionary(knownPos,g,Length(known));
-							elif gel(labG[pos],lt) then
+							elif not labG[pos] in genlabs and gel(labG[pos],lt) then
 								labG[pos]:=lt;
 							fi;
 						od;
@@ -208,12 +208,12 @@ MakeGroupLabels:=function(inp)
 									Add(known,gp);
 									Add(labG,lt);
 									AddDictionary(knownPos,gp,Length(known));
-								elif gel(labG[pos],lt) then
+								elif not labG[pos] in genlabs and gel(labG[pos],lt) then
 									labG[pos]:=lt;
 								fi;
 							od;
 						fi;
-					elif gel(labG[pos],l) then
+					elif not labG[pos] in genlabs and gel(labG[pos],l) then
 						labG[pos]:=l;
 					fi;
 				od;
@@ -590,17 +590,18 @@ GroupElement:=function(G,word)
 	end;
 	atom:=function()
 		local x,k;
+		#a generator label first, which may itself start with a bracket, e.g. "(1,2,3)" for GAP's labels of a permutation
+		k:=First(order,k->i+Length(labs[k])-1<=Length(w) and w{[i..i+Length(labs[k])-1]}=labs[k]);
+		if k<>fail then
+			i:=i+Length(labs[k]);
+			return gens[k];
+		fi;
 		if i<=Length(w) and w[i]='(' then
 			i:=i+1;
 			x:=expr();
 			if i>Length(w) or w[i]<>')' then fail_at(); fi;
 			i:=i+1;
 			return x;
-		fi;
-		k:=First(order,k->i+Length(labs[k])-1<=Length(w) and w{[i..i+Length(labs[k])-1]}=labs[k]);
-		if k<>fail then
-			i:=i+Length(labs[k]);
-			return gens[k];
 		elif i<=Length(w) and w[i]='1' then
 			i:=i+1;
 			return One(G);
@@ -686,7 +687,7 @@ end;
 
 #DisplayGroupLabels: a group by generators and relations
 #in: (inp[,pcgs]) with inp a group G, or [G,[elements,labels]] (labels strings, optionally [elements,labels,gens] as returned by MakeGroupLabels), and pcgs a pcgs of G (default Pcgs(G))
-#out: a string printing G by generators and relations, for a pc-group the relations are those of pcgs written in the labels (a power relation whose two sides are the same label is not printed), for a permutation or fp-group the labels are not used
+#out: a string printing G by generators and relations, for a pc-group the relations are those of pcgs written in the labels (a power relation whose two sides are the same label is not printed), for a permutation or fp-group the labels are used only when [G,[elements,labels,gens]] is given
 DisplayGroupLabels:=function(arg)
 	local inp,G,Gstr,El,lab,gl,isAtom,parts,pcgs,n,F,gens,rels,i,pis,exp,t,h,commPower,j,trivialCommutators;
 	inp:=arg[1];

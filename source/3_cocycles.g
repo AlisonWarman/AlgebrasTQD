@@ -9,9 +9,9 @@
 ## - ftriv: the trivial multiplicative 2-cochain
 ## - omtriv: the trivial additive 3-cocycle
 ## - igomf: the 2-cocycle theta_g of the g-twisted sector on the centralizer of g, obtained from a 3-cocycle
-## - 3cocr: the right G-action phase omega(f,g|h)
-## - 3cocl: the left-handed counterpart of 3cocr
-## - theta: the projective phase theta_g(x,y) of a flux sector (Gruen's thesis eq. (4.1))
+## - 3cocr: the transgression omega(f,g|h)=omega(f,ghg^-1,g)/(omega(f,g,h) omega(fgh(fg)^-1,f,g)), the phase of the omega-projective G-action
+## - 3cocl: Omega_f(g,h)=omega(f|g,h)=omega(f,g,h) omega(fgf^-1,fhf^-1,f)/omega(fgf^-1,f,h), the phase of the G-action on tensor products
+## - theta: the projective phase theta_g(x,y)=omega(g,x,y) omega(x,y,(xy)^-1 g xy)/omega(x,x^-1 g x,y) of a flux sector (Gruen's thesis)
 ## - 3coctest: tests whether an additive 3-cochain is a normalized 3-cocycle (for cocycles not from omf or omaut)
 ## - UCTInvariants: HAP's UCT record of TR in degree n and the invariant factors of its cocycle basis
 ## - omf: representatives of H^3(F,U(1))
@@ -54,22 +54,22 @@ igomf:=function(om, g)
 	return igom;
 end;
 
-#3cocr: the right G-action phase omega(f,g|h)
+#3cocr: the transgression omega(f,g|h)=omega(f,ghg^-1,g)/(omega(f,g,h) omega(fgh(fg)^-1,f,g)), the phase of the omega-projective G-action
 #in: 3coc a multiplicative 3-cocycle and f,g,h group elements
-#out: the root of unity omega(f,g|h) used by the right G-action
+#out: the root of unity omega(f,g|h), with (fg).v=omega(f,g|x) f.(g.v) for v of degree x, and omega(x,y|a)=1/theta_a(x,y) on C_G(a)
 3cocr:=function(3coc,f,g,h)
 	return 3coc(f,g*h*Inverse(g),g)/(3coc(f,g,h)*3coc((f*g)*h*Inverse(f*g),f,g));
 end;
 
-#3cocl: the left-handed counterpart of 3cocr
+#3cocl: Omega_f(g,h)=omega(f|g,h)=omega(f,g,h) omega(fgf^-1,fhf^-1,f)/omega(fgf^-1,f,h), the phase of the G-action on tensor products
 #in: 3coc a multiplicative 3-cocycle and f,g,h group elements
-#out: the root of unity of the left-handed counterpart of 3cocr
+#out: the root of unity Omega_f(g,h), with f.(v x u)=Omega_f(x,y) (f.v) x (f.u) for v,u of degrees x,y, and d(Omega_f)(g,h,k)=omega(g,h,k)/omega(fgf^-1,fhf^-1,fkf^-1)
 3cocl:=function(3coc,f,g,h)
 	return 3coc(f,g,h)*3coc(f*g*Inverse(f),f*h*Inverse(f),f)/3coc(f*g*Inverse(f),f,h);
 end;
 
 
-#theta: the projective phase theta_g(x,y) of a flux sector (Gruen's thesis eq. (4.1))
+#theta: the projective phase theta_g(x,y)=omega(g,x,y) omega(x,y,(xy)^-1 g xy)/omega(x,x^-1 g x,y) of a flux sector (Gruen's thesis)
 #in: 3coc a multiplicative 3-cocycle, g a flux and x,y group elements
 #out: theta_g(x,y) as a root of unity
 theta:=function(3coc,g,x,y)
@@ -559,7 +559,7 @@ Nice3coc:=function(inp)
 			if op="stop" then
 				return omnew;
 			else
-				CAGnew:=AlgebraData(rec(G:=G,om:=omnew));	
+				CAGnew:=AlgebraData(rec(G:=G,om:=omnew,HFtot:=DuplicateFreeList(List(CAG,A->[A[1],A[2]]))));
 			fi;
 			return [CAGnew,omnew];
 		fi;
@@ -707,6 +707,10 @@ TQDTheory:=function(arg)
 	inp:=rec(G:=G,glG:=th.glG);
 	if IsBound(th.om) then inp.om:=th.om; fi;
 	if IsBound(opts.bos) then inp.bos:=opts.bos; fi;
+	#bos:=true gives the labels of the bosons only, and the modular data need all the anyons
+	if IsBound(opts.bos) and opts.bos=true and ((IsBound(opts.ST) and opts.ST=true) or (IsBound(opts.data) and opts.data=true)) then
+		ErrorNoReturn("TQDTheory: bos:=true cannot be combined with ST:=true or data:=true");
+	fi;
 	#S and T only on request (data:=true, the old default, also asks for them)
 	if (IsBound(opts.ST) and opts.ST=true) or (IsBound(opts.data) and opts.data=true) then
 		inp.opA:="data";

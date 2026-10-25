@@ -76,7 +76,7 @@ ShowChars:=function(a,ElG)
 end;
 
 #AbelianLabels: anyons of an abelian group in the magnetic/electric (m,e) labelling
-#in: an abelian group G, or rec(G:=G,[gen:=independent generators],[opA:="*" for labels conjugate to the characters]), without gen the labelled generators a, b, ... of G stored by MakeGroup are used (MakeGroup(G) is called if G has none), so that m1, m2, ... are their fluxes, they must be independent
+#in: an abelian group G, or rec(G:=G,[gen:=independent generators],[opA:="*" for labels conjugate to the characters]), without gen the labelled generators a, b, ... of G stored by MakeGroup are used (MakeGroup(G) is called if G has none), so that m1, m2, ... are their fluxes, or IndependentGeneratorsOfAbelianGroup(G) when they are not independent, G not trivial
 #out: [ElG,Elm,Ele,aG] with the elements of G, of its magnetic and electric copies, and aG the anyons [g,character dictionary,class,label], a cyclic group has the flux m and the charge e, otherwise m1, m2, ... and e1, e2, 
 AbelianLabels:=function(inp)
 	local
@@ -102,14 +102,14 @@ G,gen,opA,ords,names,copy,isomi,isoei,gem,gee,lm,le,ElG,Elm,Ele,g,gm,ge,k,chsM,d
 		fi;
 	fi;
 	if not IsAbelian(G) then ErrorNoReturn("AbelianLabels: G is not abelian"); fi;
+	if IsTrivial(G) then ErrorNoReturn("AbelianLabels: G is trivial, use Anyons(G)"); fi;
 	#the generators stored by MakeGroup: m1, m2, ... are their fluxes, in their order
 	if not IsBound(gen) then
 		#a group without labels is labelled by MakeGroup (a labelled group with the same elements)
 		if HasGroupData(G) then gen:=GroupData(G).gens; else gen:=GroupData(MakeGroup(G)).gens; fi;
-		if (IsEmpty(gen) and not IsTrivial(G)) or
-		   (not IsEmpty(gen) and not (G=Group(gen) and Product(List(gen,Order))=Size(G))) then
-			ErrorNoReturn("AbelianLabels: the labelled generators of G are not independent",
-				" (their orders must multiply to |G|), so m1, m2, ... cannot follow them. Relabel G, e.g. MakeGroup(\"C4 x C2\")");
+		if IsEmpty(gen) or not (G=Group(gen) and Product(List(gen,Order))=Size(G)) then
+			Print("#I  AbelianLabels: the labelled generators of G are not independent, independent generators of G are used\n");
+			gen:=IndependentGeneratorsOfAbelianGroup(G);
 		fi;
 	fi;
 	#the magnetic and electric copies of G: the abelian group presented on m1, m2, ... (e1, e2, ...) with the orders of gen and commuting generators, written down directly (no coset enumeration), named m, e for one generator, isomi, isoei map them to G by evaluating words (m_k -> gen[k])
@@ -187,11 +187,11 @@ G,gen,opA,ords,names,copy,isomi,isoei,gem,gee,lm,le,ElG,Elm,Ele,g,gm,ge,k,chsM,d
 end;
 
 #Anyons: simple objects of the twisted Drinfeld double D^omega(G)
-#in: a group G, or rec(G:=G or [G,classes], om:=rec(a,N) a 3-cocycle, glG:=[elements,labels], gen:=independent generators of an abelian G (untwisted abelian path only, default the labelled generators of G), bos:=true for bosons only, opA:="data" for the modular data, opA:="*" for conjugate labels)
+#in: a group G, or rec(G:=G or [G,classes], om:=rec(a,N) a 3-cocycle, glG:=[elements,labels], gen:=independent generators of an abelian G (untwisted abelian path only, default the labelled generators of G), bos:=true for the labels of the bosons only (not with opA:="data"), opA:="data" for the modular data of all the anyons, opA:="*" for conjugate labels)
 #out: the list of anyons [representative,character dictionary,class,label], or rec(aG,S,T) when opA="data" (S, T indexed like aG), with opA="*" the label of every anyon is the conjugate of its character data (untwisted abelian groups: in label order, otherwise in the order without "*")
 Anyons:=function(inp)
 	local G,ElG,labG,labPos,ccin,omega,N,val,exp,trivialOmega,opA,gen,bos,g1,g2,g3,x,vacd,objs,simp,cc,data,aba,
-		gl,value,root,valueString,labelOf,separate,ce,Uce,Ugs,lab,aG,shortest;
+		gl,value,root,valueString,labelOf,separate,ce,Uce,Ugs,lab,aG,shortest,mgl;
 	#--- the input: group, labels, cocycle and options, with their defaults
 	ccin:=fail;
 	labG:=fail;
@@ -199,8 +199,10 @@ Anyons:=function(inp)
 	bos:=false;
 	if IsGroup(inp) then
 		G:=inp;
-		ElG:=Elements(G);
-		labG:=MakeGroupLabels([G,ElG])[2];
+		#the fixed labelled list of MakeGroupLabels, as in TQDTheory, so that ties between labels are broken in the same order
+		mgl:=MakeGroupLabels([G]);
+		ElG:=mgl[1];
+		labG:=mgl[2];
 	elif IsRecord(inp) then
 		if not IsBound(inp.G) then ErrorNoReturn("Anyons: record input requires G"); fi;
 		if IsGroup(inp.G) then G:=inp.G; else G:=inp.G[1]; ccin:=inp.G[2]; fi;
@@ -208,8 +210,9 @@ Anyons:=function(inp)
 			ElG:=inp.glG[1];
 			if Length(inp.glG[2])=Length(ElG) then labG:=inp.glG[2]; else labG:=MakeGroupLabels([G,ElG])[2]; fi;
 		else
-			ElG:=Elements(G);
-			labG:=MakeGroupLabels([G,ElG])[2];
+			mgl:=MakeGroupLabels([G]);
+			ElG:=mgl[1];
+			labG:=mgl[2];
 		fi;
 		if IsBound(inp.opA) then opA:=inp.opA; fi;
 		if IsBound(inp.gen) then gen:=inp.gen; fi;
@@ -219,6 +222,10 @@ Anyons:=function(inp)
 		fi;
 	else
 		ErrorNoReturn("Anyons: give a group or a record rec(G:=...)");
+	fi;
+	#bos:=true gives the labels of the bosons only, and the modular data need all the anyons
+	if bos and opA="data" then
+		ErrorNoReturn("Anyons: bos:=true gives the labels of the bosons only, and the modular data (opA:=\"data\") need all anyons: use one option or the other");
 	fi;
 	#the cocycle: val = gcd of its values and N, exp = N/val, the loop stops once val=1 and a nonzero value is seen
 	if IsRecord(inp) and IsBound(inp.om) then
@@ -495,20 +502,15 @@ end;
 #in: (th,a,b) with th a record from TQDTheory(G,v,rec(ST:=true)), a and b anyons given by their labels (th.labels) or indices
 #out: the decomposition of a x b as a string of labels, e.g. "1+([1],2 r=-1)+([r],1)", N_ab^c = sum_x S_ax S_bx conj(S_cx)/S_0x
 Fusion:=function(th,a,b)
-	local S,n,i,j,mult,pos,norm,scale;
+	local S,n,i,j,mult,pos;
 	if not (IsRecord(th) and IsBound(th.S) and IsBound(th.labels)) then
 		ErrorNoReturn("Fusion: the theory has no S matrix. Build it with TQDTheory(G,v,rec(ST:=true))");
 	fi;
 	S:=th.S;
 	n:=Length(S);
-	#The vacuum row has norm one for a normalized modular S matrix
-	norm:=Sum(S[1],z->z*ComplexConjugate(z));
-	if norm<>1 then
-		if not IsRat(norm) or norm<=0 then
-			ErrorNoReturn("Fusion: cannot normalize the S matrix vacuum row");
-		fi;
-		scale:=Sqrt(norm);
-		S:=List(S,row->List(row,z->z/scale));
+	#a modular S matrix is symmetric and unitary: refuse any other S
+	if S<>TransposedMat(S) or S*Dag(S)<>IdentityMat(n) then
+		ErrorNoReturn("Fusion: th.S is not a modular S matrix (symmetric and unitary)");
 	fi;
 	pos:=function(x)
 		local k;
