@@ -97,16 +97,16 @@ AlgebraClassesG:=function(data)
 		A2:=CAG[p[2]];
 		F:=A1[2];
 		ElF:=Elements(F);
-		if not IsConjugate(G,A2[1],A1[1])  then t:=false; reason:="H'\\neq{}^g\\!H"; 
-		elif not IsConjugate(G,A2[2],A1[2])  then t:=false; reason:="N'\\neq{}^g\\!N";
-		#H and N can each be conjugate to H' and N' with no single g mapping (H,N) to (H',N')
-		elif ForAll(Elements(G),g->not (A2[1]=A1[1]^g and A2[2]=A1[2]^g)) then t:=false; reason:="(H',N')\\neq{}^g\\!(H,N)";
+		if not IsConjugate(G,A2[1],A1[1])  then t:=false; reason:="H' \\neq {}^g H"; 
+		elif not IsConjugate(G,A2[2],A1[2])  then t:=false; reason:="F' \\neq {}^g F";
+		#H and F can each be conjugate to H' and F' with no single g mapping (H,F) to (H',F')
+		elif ForAll(Elements(G),g->not (A2[1]=A1[1]^g and A2[2]=A1[2]^g)) then t:=false; reason:="(H',F') \\neq {}^g (H,F)";
 		else
 		#the linear characters of F, which give every gauge c*chi with chi linear, once per pair
 		chtabF:=CharacterTable(F);
 		clF:=ConjugacyClasses(chtabF);
 		chF:=LinearCharacters(chtabF);
-		#gammaok: some g with ^g(H,N)=(H',N') solves the gamma equation
+		#gammaok: some g with ^g(H,F)=(H',F') solves the gamma equation
 		gammaok:=false;
 		for g in Elements(G) do
 			if (A2[1]=A1[1]^g and A2[2]=A1[2]^g) then
@@ -145,7 +145,7 @@ AlgebraClassesG:=function(data)
 						if t=true then break; fi;
 					od;
 					if t=true then 
-						#reasons has p (two pos that are equivalent), g^-1 (aka g in file), F (=N) and irr (=c), Omg	
+						#reasons has p (two pos that are equivalent), g^-1 (aka g in file), F and irr (=c), Omg	
 						Add(equiv,p);
 						if Uom=[1] then Add(reasonseq,[p,gl(g^-1),List(ElF,k->gl(k)),List(irr,r->r)]);
 						else
@@ -165,11 +165,11 @@ AlgebraClassesG:=function(data)
 		#no g gives an isomorphism: the eps reason if the gamma equation is solvable for some g, the gamma reason if for none
 		if t=false then
 			if gammaok then
-				if Uom=[1] then reason:="\\eps^{\\prime g}\\neq\\eps";
+				if Uom=[1] then reason:="\\eps^{\\prime g} \\neq \\eps";
 				else reason:="\\epsilon^{\\prime g} \\Omega_g \\neq \\Omega_g'\\epsilon";
 				fi;
 			else
-				if Uom=[1] then reason:="\\gamma^{\\prime g}\\neq\\gamma";
+				if Uom=[1] then reason:="\\gamma^{\\prime g} \\neq \\gamma";
 				else reason:="\\gamma^{\\prime g} \\Omega_g \\neq \\gamma";
 				fi;
 			fi;
@@ -829,7 +829,7 @@ end;
 
 #AlgebraTableTeX: the table of algebras of a theory in the layout of the algebra tables of arXiv:2605.31602
 #in: (th,M[,opts]) with th from TQDTheory, M from AlgebraClasses(th) and opts a record with optional fields classes (class indices to show, default all), prefix (label prefix, default "A"), symbol (the displayed name of algebra i is symbol_{i}, default "A^\omega" for a twisted theory and "A" otherwise), file (write the table there)
-#out: the LaTeX string of a one-column tabular: for each class, in the order of DisplayClasses, the rows \nameref{prefix:i}$=A(H,N,gamma,eps)$, then $\xlabel[$symbol_{i}$]{prefix:i} decomposition$, then the reduced topological order (Trivial for the Lagrangian algebras, which follow a double \hline), \xlabel is the macro of arXiv:2605.31602, \newcommand\xlabel[2][]{\phantomsection\def\@currentlabelname{#1}\label{#2}} (needs hyperref and \makeatletter), and \Z is its macro for cyclic groups
+#out: the LaTeX string of a one-column tabular: for each class, in the order of DisplayClasses, the rows \nameref{prefix:i}$=A(H,F,gamma,eps)$, then $\xlabel[$symbol_{i}$]{prefix:i} decomposition$, then the reduced topological order (Trivial for the Lagrangian algebras, which follow a double \hline), \xlabel is the macro of arXiv:2605.31602, \newcommand\xlabel[2][]{\phantomsection\def\@currentlabelname{#1}\label{#2}} (needs hyperref and \makeatletter), and \Z is its macro for cyclic groups
 AlgebraTableTeX:=function(arg)
 	local th,M,opts,prefix,symbol,cl,s,i,c,lagstarted;
 	th:=arg[1]; M:=arg[2];
@@ -857,7 +857,7 @@ end;
 
 #TwinTableTeX: the table of twin algebras of a theory in the layout of the twin table of arXiv:2605.31602
 #in: (th,M[,opts]) with th from TQDTheory, M from AlgebraClasses(th) and opts a record with optional field file
-#out: the LaTeX string of an array with one row per twin pair of M.twins: the two algebras A(H,N,gamma,eps) and their common anyon decomposition, their reduced topological orders, and the reason(s) of M.reasons for that pair (inequivalence of the subgroups or of gamma, eps up to conjugation, as found by AlgebraClassesG)
+#out: the LaTeX string of an array with one row per twin pair of M.twins: the two algebras A(H,F,gamma,eps) and their common anyon decomposition, their reduced topological orders, and the reason(s) of M.reasons for that pair (inequivalence of the subgroups or of gamma, eps up to conjugation, as found by AlgebraClassesG)
 TwinTableTeX:=function(arg)
 	local th,M,opts,s,p,r1,r2,why;
 	th:=arg[1]; M:=arg[2];

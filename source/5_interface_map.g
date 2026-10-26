@@ -360,7 +360,7 @@ InterfaceMap:=function(arg)
 	fi;
 	labK:=AnyonLabelStrings(aK);
 	#the reduced theory is twisted only when alpha is not a coboundary, as in AlgebraDisplayData
-	if Ualm<>[] and GammaTrivialization(K,ala)=fail then Print("Anyons in D^alpha(",StructureDescription(K),"):\n"); else Print("Anyons in D(",StructureDescription(K),"):\n"); fi;
+	if Ualm<>[] and GammaTrivialization(K,ala)=fail then Print("\nAnyons in D^alpha(",StructureDescription(K),"):\n"); else Print("\nAnyons in D(",StructureDescription(K),"):\n"); fi;
 	for k in [1..Length(aK)] do Print("d=",dima(aK[k],One(K)),"\t",labK[k],"\n"); od;
 
 	#A x A(K,1,1,1)=A(HxK,Fx1,tgamma,teps) in the folded theory, tgamma((f1,1),(f2,1))=gamma(f1,f2), teps((h,k),(f,1))=eps(h,f)

@@ -20,7 +20,7 @@
 ## - TeXGroupName: a group name in the notation of arXiv:2605.31602
 ## - TeXLabel: a group-element or anyon label in LaTeX (math mode)
 ## - AlgebraDisplayData: the display data of one algebra of a theory, for ShowAlgData and the LaTeX tables (prints nothing)
-## - ShowAlgData: prints one algebra: name, dimension, H/N, reduced TO, anyons (opP:="long": H, N and the values of gamma, eps, alpha)
+## - ShowAlgData: prints one algebra: name, dimension, H/F, reduced TO, anyons (opP:="long": H, F and the values of gamma, eps, alpha)
 ##
 #############################################################################
 
@@ -854,10 +854,10 @@ TeXLabel:=function(s)
 end;
 
 #AlgebraDisplayData: the display data of one algebra of a theory, for ShowAlgData and the LaTeX tables (prints nothing)
-#in: (th,A[,opts]), A=[H,N,gamma,eps,G] or a record of AlgebrasWithAnyons or AlgebraClasses, opts: na, alpha, reducedTO:=false, values:=true
+#in: (th,A[,opts]), A=[H,F,gamma,eps,G] or a record of AlgebrasWithAnyons or AlgebraClasses, opts: na, alpha, reducedTO:=false, values:=true
 #out: rec(A,dim,Lag,K,na,decomposition,decompositionTeX,name,nameTeX,alphaTrivial,reducedTO,reducedTOTeX[,gamma,eps,alpha])
 AlgebraDisplayData:=function(arg)
-	local th,A,opts,G,H,N,gamma,eps,ElH,ElN,ElG,gl,gens,trivg,trive,pick,r,al,ElK,ala,lab,labTeX,nz,i,s,k1,k2,k3,f1,f2,h,f;
+	local th,A,opts,G,H,F,gamma,eps,ElH,ElF,ElG,gl,gens,trivg,trive,pick,r,al,ElK,ala,lab,labTeX,nz,i,s,k1,k2,k3,f1,f2,h,f;
 	th:=arg[1];
 	A:=arg[2];
 	if Length(arg)>2 then opts:=arg[3]; else opts:=rec(); fi;
@@ -868,9 +868,9 @@ AlgebraDisplayData:=function(arg)
 		else ErrorNoReturn("AlgebraDisplayData: a record must come from AlgebrasWithAnyons or AlgebraClasses");
 		fi;
 	fi;
-	H:=A[1]; N:=A[2]; gamma:=A[3]; eps:=A[4]; G:=A[5];
+	H:=A[1]; F:=A[2]; gamma:=A[3]; eps:=A[4]; G:=A[5];
 	if not IsIdenticalObj(G,th.G) then ErrorNoReturn("AlgebraDisplayData: the algebra does not belong to the theory th"); fi;
-	ElH:=Elements(H); ElN:=Elements(N);
+	ElH:=Elements(H); ElF:=Elements(F);
 	ElG:=th.glG[1];
 	gl:=g->th.glG[2][Position(ElG,g)];
 	#generator strings of a subgroup: [plain, TeX]
@@ -881,12 +881,12 @@ AlgebraDisplayData:=function(arg)
 		return [Concatenation(StructureDescription(S),"=<",JoinStringsWithSeparator(l,","),">"),
 			Concatenation(TeXGroupName(StructureDescription(S)),"=\\langle ",JoinStringsWithSeparator(List(l,TeXLabel),","),"\\rangle")];
 	end;
-	trivg:=ForAll(ElN,x->ForAll(ElN,y->gamma(x,y)=1));
-	trive:=ForAll(ElH,x->ForAll(ElN,y->eps(x,y)=1));
-	r:=rec(A:=A,dim:=Order(G)*Order(N)/Order(H),Lag:=H=N,K:=StructureDescription(H/N));
+	trivg:=ForAll(ElF,x->ForAll(ElF,y->gamma(x,y)=1));
+	trive:=ForAll(ElH,x->ForAll(ElF,y->eps(x,y)=1));
+	r:=rec(A:=A,dim:=Order(G)*Order(F)/Order(H),Lag:=H=F,K:=StructureDescription(H/F));
 	pick:=function(b,x,y) if b then return x; fi; return y; end;
-	r.name:=Concatenation("A(",gens(H)[1],", ",gens(N)[1],", ",pick(trivg,"1","gamma"),", ",pick(trive,"1","eps"),")");
-	r.nameTeX:=Concatenation("A(",gens(H)[2],", ",gens(N)[2],", ",pick(trivg,"1","\\gamma"),", ",pick(trive,"1","\\epsilon"),")");
+	r.name:=Concatenation("A(",gens(H)[1],", ",gens(F)[1],", ",pick(trivg,"1","gamma"),", ",pick(trive,"1","eps"),")");
+	r.nameTeX:=Concatenation("A(",gens(H)[2],", ",gens(F)[2],", ",pick(trivg,"1","\\gamma"),", ",pick(trive,"1","\\epsilon"),")");
 	#anyon decomposition
 	if IsBound(opts.na) then r.na:=opts.na;
 	elif IsBound(th.om) then r.na:=Last(AlgAnyonsV([A,th.aG,th.om]));
@@ -909,7 +909,7 @@ AlgebraDisplayData:=function(arg)
 		r.alphaTrivial:=fail;
 		r.reducedTO:="Trivial";
 		r.reducedTOTeX:="\\text{Trivial}";
-	elif H=G and Order(N)=1 then
+	elif H=G and Order(F)=1 then
 		#alpha=omega on G/1=G: trivial when th.om is unbound or identically 0 (the zero test of TQDTheory), otherwise a coboundary iff GammaTrivialization finds a trivialization
 		r.alphaTrivial:=not IsBound(th.om) or ForAll(ElG,g1->ForAll(ElG,g2->ForAll(ElG,g3->th.om.a(g1,g2,g3) mod th.om.N=0)))
 			or GammaTrivialization(G,th.om)<>fail;
@@ -938,20 +938,20 @@ AlgebraDisplayData:=function(arg)
 	fi;
 	if IsBound(opts.values) and opts.values=true then
 		r.gamma:=[]; r.eps:=[]; r.alpha:=[];
-		for f1 in ElN do for f2 in ElN do
+		for f1 in ElF do for f2 in ElF do
 			if gamma(f1,f2)<>1 then Add(r.gamma,Concatenation("gamma(",gl(f1),",",gl(f2),")=",String(gamma(f1,f2)))); fi;
 		od; od;
-		for f in ElN do for h in ElH do
+		for f in ElF do for h in ElH do
 			if eps(h,f)<>1 then Add(r.eps,Concatenation("eps(",gl(h),",",gl(f),")=",String(eps(h,f)))); fi;
 		od; od;
-		if al=fail and not r.Lag and not (H=G and Order(N)=1) then
+		if al=fail and not r.Lag and not (H=G and Order(F)=1) then
 			if IsBound(opts.alpha) then al:=opts.alpha;
 			elif IsBound(th.om) then al:=alphaf([A,th.om]);
 			else al:=alphaf([A]);
 			fi;
 			ElK:=al[2]; ala:=al[3];
 		fi;
-		if H=G and Order(N)=1 and IsBound(th.om) then
+		if H=G and Order(F)=1 and IsBound(th.om) then
 			#alpha=omega on G/1=G, th.om is stored as omega itself (not its bar)
 			for k1 in ElG do for k2 in ElG do for k3 in ElG do
 				if th.om.a(k1,k2,k3) mod th.om.N<>0 then
@@ -970,11 +970,11 @@ AlgebraDisplayData:=function(arg)
 	return r;
 end;
 
-#ShowAlgData: prints one algebra: name, dimension, H/N, reduced TO, anyons (opP:="long": H, N and the values of gamma, eps, alpha)
+#ShowAlgData: prints one algebra: name, dimension, H/F, reduced TO, anyons (opP:="long": H, F and the values of gamma, eps, alpha)
 #in: (th,A[,opts]) as for AlgebraDisplayData, opts also opP:="short" (default) or "long"
 #out: the record of AlgebraDisplayData
 ShowAlgData:=function(arg)
-	local th,r,s,opts,long,H,N,gl,gstr;
+	local th,r,s,opts,long,H,F,gl,gstr,ind;
 	th:=arg[1];
 	if Length(arg)>2 then opts:=ShallowCopy(arg[3]); else opts:=rec(); fi;
 	long:=false;
@@ -986,16 +986,18 @@ ShowAlgData:=function(arg)
 	if long then opts.values:=true; opts.reducedTO:=false; fi;
 	r:=AlgebraDisplayData(th,arg[2],opts);
 	if not long then
-		Print(r.name,"  dim=",r.dim,"  H/N=",r.K);
+		#the lines below the name start under its "(": one space for "A(", more for a longer prefix such as "A12("
+		ind:=RepeatedString(" ",Position(r.name,'(')-1);
+		Print(r.name,"  dim=",r.dim,"  H/F=",r.K);
 		if IsBound(r.reducedTO) then Print("  reduced TO: ",r.reducedTO); fi;
 		Print("\n");
-		Print("  ",r.decomposition,"\n");
+		Print(ind,r.decomposition,"\n");
 		if IsBound(r.gamma) then
-			for s in Concatenation(r.gamma,r.eps,r.alpha) do Print("  ",s,"\n"); od;
+			for s in Concatenation(r.gamma,r.eps,r.alpha) do Print(ind,s,"\n"); od;
 		fi;
 		return r;
 	fi;
-	H:=r.A[1]; N:=r.A[2];
+	H:=r.A[1]; F:=r.A[2];
 	gl:=g->th.glG[2][Position(th.glG[1],g)];
 	#"S=<generators>" with S the StructureDescription, or just S for the trivial group
 	gstr:=function(S)
@@ -1004,9 +1006,9 @@ ShowAlgData:=function(arg)
 		if l=[] then return StructureDescription(S); fi;
 		return Concatenation(StructureDescription(S),"=<",JoinStringsWithSeparator(l,","),">");
 	end;
-	Print("H=",gstr(H),"   N=",gstr(N),"  H/N=",r.K,"\n");
+	Print("H=",gstr(H),"   F=",gstr(F),"  H/F=",r.K,"\n");
 	for s in Concatenation(r.gamma,r.eps) do Print(s,"\n"); od;
-	if H=th.G and IsTrivial(N) then
+	if H=th.G and IsTrivial(F) then
 		if IsBound(th.om) and r.alpha<>[] then Print("3-cocycle=omega\n"); fi;
 	else
 		for s in r.alpha do Print(s,"\n"); od;
