@@ -81,10 +81,10 @@ PaperLabels := function(th)
     return labels;
 end;;
 
-ClassOn := function(M,H,N)
+ClassOn := function(M,H,F)
     local matches;
-    matches := Filtered([1..Length(M.classes)],i->ForAny(M.classes[i].algebras,A->A[1]=H and A[2]=N));
-    if Length(matches)<>1 then ErrorNoReturn("Expected one algebra class on ",H,", ",N,", found ",matches); fi;
+    matches := Filtered([1..Length(M.classes)],i->ForAny(M.classes[i].algebras,A->ForAny(G,g->A[1]^g=H and A[2]^g=F)));
+    if Length(matches)<>1 then ErrorNoReturn("Expected one algebra class on ",H,", ",F,", found ",matches); fi;
     return matches[1];
 end;;
 
@@ -291,11 +291,17 @@ fi;
 Print("All 16 anyon-map rows match (InterfaceMap), including [c]_{-i} times the G-irreps and the [ac]_{+-i}, [ac]_{++i} terms.\n");
 # Reduced phase labels
 reducedTh := TQDTheory(K,rec(a:=omegaII,N:=16,G:=K));;
+ClassOnK := function(M,H,F)
+    local matches;
+    matches := Filtered([1..Length(M.classes)],i->ForAny(M.classes[i].algebras,A->ForAny(K,g->A[1]^g=H and A[2]^g=F)));
+    if Length(matches)<>1 then ErrorNoReturn("Expected one algebra class on ",H,", ",F,", found ",matches); fi;
+    return matches[1];
+end;;
 reducedClasses := AlgebraClasses(reducedTh);;
-redLag1 := ClassOn(reducedClasses,Group(m1),Group(m1));;
-redLag2 := ClassOn(reducedClasses,Group(m2),Group(m2));;
+redLag1 := ClassOnK(reducedClasses,Group(m1),Group(m1));;
+redLag2 := ClassOnK(reducedClasses,Group(m2),Group(m2));;
 reducedHs := Hasse(reducedTh,reducedClasses);;
-redElectric := ClassOn(reducedClasses,TrivialSubgroup(K),TrivialSubgroup(K));;
+redElectric := ClassOnK(reducedClasses,TrivialSubgroup(K),TrivialSubgroup(K));;
 electricPhases := PhaseLabels(reducedTh,redElectric,reducedHs);;
 if [electricPhases[redLag1],electricPhases[redLag2]]<>["SSB","SSB"] then
     ErrorNoReturn("The two (Z2 x Z2)^omega_II phases are not partial SSB phases");

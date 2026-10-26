@@ -88,18 +88,18 @@ Section("All twin pairs in Z(Vec_G32)");
 M := AlgebraClasses(th);;
 ShowTwins(th, M);
 
-# N-type twin pair
+# F-type twin pair
 
-Section("The N-type twin pair of Z(Vec_G32)");
+Section("The F-type twin pair of Z(Vec_G32)");
 H3 := Group(g2, g3, g1^4);;
-N := Group(g3);; Np := Group(g3*g1^4);;
+F := Group(g3);; Fp := Group(g3*g1^4);;
 NGH3 := Normalizer(G, H3);;
 Print("H3 = ", StructureDescription(H3), ",  N_G(H3) = <", JoinStringsWithSeparator(List(GeneratorsOfGroup(NGH3), g -> GroupLabel(G,g)), ","),
       "> of order ", Size(NGH3), "\n");
-Print("N' = g1 N g1^-1: ", Np = N^(g1^-1), ",  N, N' conjugate in N_G(H3): ", IsConjugate(NGH3, N, Np), "\n");
+Print("F' = g1 F g1^-1: ", Fp = F^(g1^-1), ",  F, F' conjugate in N_G(H3): ", IsConjugate(NGH3, F, Fp), "\n");
 candidates := Filtered(M.twins, p -> ForAll(p, i -> M.classes[i].algebras[1][1] = H3));;
-if Length(candidates)<>1 then ErrorNoReturn("Expected one N-type twin pair on H3"); fi;
-twinsN := candidates[1];;
+if Length(candidates)<>1 then ErrorNoReturn("Expected one F-type twin pair on H3"); fi;
+twinsF := candidates[1];;
 ShowEps := function(i)
     local A, n;
     A := M.classes[i].algebras[1];
@@ -108,9 +108,9 @@ ShowEps := function(i)
     ShowAlgData(th, M.classes[i], rec(opP := "short"));
     Print("  eps(h,", GroupLabel(G,n), ") on g2, g3, g1^4: ", List([g2,g3,g1^4], h -> A[4](h,n)), "\n");
 end;;
-for i in twinsN do ShowEps(i); od;
-if not Set(List(twinsN, i -> M.classes[i].algebras[1][2])) = Set([N, Np]) then
-    ErrorNoReturn("The N-type pair is not on N = <g3> and N' = <g3g1^4>");
+for i in twinsF do ShowEps(i); od;
+if not Set(List(twinsF, i -> M.classes[i].algebras[1][2])) = Set([F, Fp]) then
+    ErrorNoReturn("The F-type pair is not on F = <g3> and F' = <g3g1^4>");
 fi;
 
 # H-type Gassmann pair and its common subalgebra
@@ -161,27 +161,27 @@ if AskExample7("Compute twin algebras with non-trivial 3-cocycle omega?") then
     onH3 := Filtered([1..Length(Mom.classes)], i -> IsConjugate(G, Mom.classes[i].algebras[1][1], H3));;
     Print(Length(onH3), " algebra classes on H3\n");
     for i in onH3 do ShowAlgData(thom, Mom.classes[i], rec(opP := "short"));; od;
-    Print("\nomega restricted to N, N' is trivial in H^3: ", List([N, Np], K -> gammaf([K, omega]) <> fail), "\n");
+    Print("\nomega restricted to F, F' is trivial in H^3: ", List([F, Fp], K -> gammaf([K, omega]) <> fail), "\n");
     omMult := function(x,y,z) return E(omega.N)^omega.a(x,y,z); end;;
     Print("omega(h1,h2|n) on H3 is a coboundary for n = g3, g3g1^4: ",
           List([g3, g3*g1^4], n -> IsTrivial2coc([Elements(H3), function(h1,h2) return 3cocr(omMult,h1,h2,n); end]) <> fail), "\n");
-    Print("The N-type pair remains a twin pair in Z(Vec_G32^omega): ",
+    Print("The F-type pair remains a twin pair in Z(Vec_G32^omega): ",
           ForAny(Mom.twins, p -> ForAll(p, i -> i in onH3)), "\n");
 fi;
 
 if AskExample7("Run twin sweep?") then
     # Set fullSweep := true for all groups of order <= 48
     TwinType := function(G, A1, A2)
-        local s, g, NGH, N2, gamma2, stab;
+        local s, g, NGH, F2, gamma2, stab;
         if A1[1]=A1[2] then s := "Lag     "; else s := "Non-Lag "; fi;
         if not IsConjugate(G, A1[1], A2[1]) then return Concatenation(s, "H'!=gH"); fi;
         g := RepresentativeAction(G, A2[1], A1[1]);
         NGH := Normalizer(G, A1[1]);
-        N2 := A2[2]^g;
-        if not IsConjugate(NGH, A1[2], N2) then
-            return Concatenation(s, "N'!=gN, g in N_G(H)  (N, N' conjugate in G: ", String(IsConjugate(G, A1[2], A2[2])), ")");
+        F2 := A2[2]^g;
+        if not IsConjugate(NGH, A1[2], F2) then
+            return Concatenation(s, "F'!=gF, g in N_G(H)  (F, F' conjugate in G: ", String(IsConjugate(G, A1[2], A2[2])), ")");
         fi;
-        g := g*RepresentativeAction(NGH, N2, A1[2]);
+        g := g*RepresentativeAction(NGH, F2, A1[2]);
         gamma2 := function(a,b) return A2[3](a^(g^-1), b^(g^-1)); end;
         stab := Normalizer(NGH, A1[2]);
         if ForAny(stab, k -> IsTrivial2coc([Elements(A1[2]), function(a,b) return A1[3](a,b)/gamma2(a^k,b^k); end]) <> fail) then

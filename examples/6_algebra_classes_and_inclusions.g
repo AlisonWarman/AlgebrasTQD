@@ -3,7 +3,7 @@
 ##
 ##  6_algebra_classes_and_inclusions.g          AlgebrasTQD examples
 ##
-##  Algebra isomorphism classes, inclusions, directed edges, Hasse diagrams and phase labels for the double of A4 and its twisted doubles Z(Vec_A4^omega_2) and Z(Vec_A4^omega_3), where omega_2 and omega_3 are 3-cocycles of order two and three, with the generators a = (1,2,3) and b = (1,2)(3,4) of the Hasse-diagram papers. For each theory a linked Hasse diagram and algebra table are written to examples/tex/, in the layout of Twin Algebras. Usage, from any directory: Read("path/to/AlgebrasTQD/examples/6_algebra_classes_and_inclusions.g")
+##  Algebra isomorphism classes, inclusions, directed edges, Hasse diagrams and phase labels for the double of A4 and its twisted doubles Z(Vec_A4^omega_2) and Z(Vec_A4^omega_3), where omega_2 and omega_3 are 3-cocycles of order two and three, with the generators a = (1,2,3) and b = (1,2)(3,4). For each theory a linked Hasse diagram and algebra table are written to examples/tex/. Usage, from any directory: Read("path/to/AlgebrasTQD/examples/6_algebra_classes_and_inclusions.g")
 ##
 #############################################################################
 
@@ -19,11 +19,11 @@ if not IsDirectoryPath(texdir) and CreateDir(texdir) = fail then
 fi;
 
 #----------------------------------------------------------------------------
-# 1. The group A4 with the generators a = (1,2,3) and b = (1,2)(3,4). MakeGroup labels a = (1,2,3) and b = (2,3,4), whose product ba is (1,2)(3,4)
+# 1. The group A4 with the generators a = (1,2,3) and b = (1,2)(3,4)
 
 Section("The group A4 = <a,b> with a = (1,2,3) and b = (1,2)(3,4)");
-G := MakeGroup("A4");;
-RelabelGroup(G, ["a","b"], ["a","ba"]);;
+G := AlternatingGroup(4);;
+MakeGroupLabels([G, [(1,2,3), (1,2)(3,4)], ["a","b"]]);;
 ShowGroup(G);
 a := GroupElement(G, "a");; b := GroupElement(G, "b");;
 F := Group(b, a*b*a^2);;    # the Klein four-group, normal in A4

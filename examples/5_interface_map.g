@@ -47,8 +47,8 @@ ShowAlgebrasWithAnyons(AlgebrasWithAnyons(thDS));
 # 3. The canonical interface map of every non-Lagrangian algebra class of D(A4), in the order of AlgebraClasses, as in the table examples/tex/A4_algebras.tex written by example 6. The identity algebra gives the identity map, and the seven others reduce to D(C2 x C2), D(C3) or D(C2). The Lagrangian algebras are the gapped boundaries, whose map sends the vacuum to the algebra
 
 Section("Canonical interface maps for D(A4)");
-G := MakeGroup("A4");;
-RelabelGroup(G, ["a","b"], ["a","ba"]);;    # a = (1,2,3), b = (1,2)(3,4)
+G := AlternatingGroup(4);;
+MakeGroupLabels([G, [(1,2,3), (1,2)(3,4)], ["a","b"]]);;
 thA4 := TQDTheory(G);;
 M := AlgebraClasses(thA4);;
 if Length(M.classes) <> 15 then
